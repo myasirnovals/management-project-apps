@@ -44,9 +44,14 @@
                         </span>
                     </div>
 
-                    <div class="space-y-3 flex-1 overflow-y-auto">
+                    <div class="space-y-3 flex-1 overflow-y-auto"
+                        data-status="{{ $col['status']->value }}"
+                        ondragover="handleDragOver(event)"
+                        ondrop="handleDrop(event, this)">
                         @forelse($col['issues'] as $issue)
                             <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition cursor-pointer group"
+                                draggable="true"
+                                ondragstart="handleDragStart(event, this)"
                                 data-issue-id="{{ $issue->id }}"
                                 onclick="openKanbanIssueDetail(this.dataset.issueId)">
                                 
@@ -191,6 +196,40 @@
 
         function closeKanbanDetailModal() {
             document.getElementById('kanbanDetailModal').classList.add('hidden');
+        }
+
+        function handleDragStart(e, el) {
+            e.dataTransfer.setData('text/plain', el.dataset.issueId);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        async function handleDrop(e, colEl) {
+            e.preventDefault();
+            const issueId = e.dataTransfer.getData('text/plain');
+            const targetStatus = colEl.dataset.status;
+            if (!issueId || !targetStatus) return;
+
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            try {
+                const res = await fetch(`/projects/{{ $project->id }}/board/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ issue_id: issueId, status: targetStatus })
+                });
+                if (res.ok) {
+                    window.location.reload();
+                }
+            } catch (err) {
+                console.error(err);
+            }
         }
     </script>
 </x-app-layout>
