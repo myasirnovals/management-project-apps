@@ -182,6 +182,84 @@ class CalendarController extends Controller
     }
 
     /**
+     * Display Google Calendar and timeline focused specifically for a single project.
+     */
+    public function projectTimeline(Request $request, Project $project): View
+    {
+        // Load Google Calendar settings
+        $settingsFile = storage_path('app/calendar_settings.json');
+        $calendarSettings = [
+            'calendar_id' => '',
+            'timezone' => 'Asia/Jakarta',
+            'view_mode' => 'MONTH',
+            'custom_embed_url' => '',
+        ];
+
+        if (file_exists($settingsFile)) {
+            $saved = json_decode(file_get_contents($settingsFile), true);
+            if (is_array($saved)) {
+                $calendarSettings = array_merge($calendarSettings, $saved);
+            }
+        }
+
+        $viewMode = $request->input('mode', $calendarSettings['view_mode'] ?? 'MONTH');
+        $calendarId = trim($calendarSettings['calendar_id'] ?? '');
+        $timezone = $calendarSettings['timezone'] ?? 'Asia/Jakarta';
+
+        if (!empty($calendarSettings['custom_embed_url'])) {
+            $embedUrl = $calendarSettings['custom_embed_url'];
+        } elseif (!empty($calendarId)) {
+            $cid = urlencode($calendarId);
+            $tz = urlencode($timezone);
+            $embedUrl = "https://calendar.google.com/calendar/embed?src={$cid}&ctz={$tz}&mode={$viewMode}&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=1";
+        } else {
+            $cid = urlencode('id.indonesian#holiday@group.v.calendar.google.com');
+            $tz = urlencode($timezone);
+            $embedUrl = "https://calendar.google.com/calendar/embed?src={$cid}&ctz={$tz}&mode={$viewMode}&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=1";
+        }
+
+        // Direct action URLs with project context
+        $eventTitle = urlencode("[{$project->key}] Jadwal Proyek {$project->name}");
+        $createEventUrl = !empty($calendarId)
+            ? "https://calendar.google.com/calendar/u/0/r/eventedit?text={$eventTitle}&src=" . urlencode($calendarId)
+            : "https://calendar.google.com/calendar/u/0/r/eventedit?text={$eventTitle}";
+
+        $openCalendarUrl = !empty($calendarId)
+            ? "https://calendar.google.com/calendar/u/0/r?cid=" . urlencode($calendarId)
+            : "https://calendar.google.com/calendar";
+
+        // Fetch project sprints and issues
+        $sprints = $project->sprints()->orderByDesc('created_at')->get();
+        $activeSprint = $sprints->where('status', SprintStatus::ACTIVE)->first();
+
+        $issuesWithDue = $project->issues()
+            ->whereNotNull('due_date')
+            ->with(['assignee', 'sprint'])
+            ->orderBy('due_date')
+            ->get();
+
+        $upcomingIssues = $issuesWithDue->where('status', '!=', IssueStatus::DONE->value);
+        $doneIssues = $issuesWithDue->where('status', IssueStatus::DONE->value);
+
+        $isProjectManager = auth()->check() && auth()->user()->isProjectManager();
+
+        return view('projects.timeline', compact(
+            'project',
+            'calendarSettings',
+            'embedUrl',
+            'createEventUrl',
+            'openCalendarUrl',
+            'viewMode',
+            'sprints',
+            'activeSprint',
+            'issuesWithDue',
+            'upcomingIssues',
+            'doneIssues',
+            'isProjectManager'
+        ));
+    }
+
+    /**
      * Update Google Calendar configuration settings (PM only).
      */
     public function updateSettings(Request $request)

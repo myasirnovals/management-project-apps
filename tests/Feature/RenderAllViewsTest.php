@@ -36,6 +36,7 @@ class RenderAllViewsTest extends TestCase
             "/projects/{$project->id}/board",
             "/projects/{$project->id}/kanban",
             "/projects/{$project->id}/backlog",
+            "/projects/{$project->id}/timeline-calendar",
             "/projects/{$project->id}/components",
             "/projects/{$project->id}/releases",
             "/projects/{$project->id}/reports",

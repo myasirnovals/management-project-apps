@@ -77,6 +77,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/backlog/bulk', [BacklogController::class, 'bulkAction'])->name('backlog.bulk');
         Route::get('/backlog/export-csv', [BacklogController::class, 'exportCsv'])->name('backlog.exportCsv');
 
+        // Project Timeline & Calendar
+        Route::get('/timeline-calendar', [CalendarController::class, 'projectTimeline'])->name('timeline');
+
         // Sprints (Modul III.B)
         Route::post('/sprints', [SprintController::class, 'store'])->name('sprints.store');
         Route::post('/sprints/{sprint}/start', [SprintController::class, 'start'])->name('sprints.start');

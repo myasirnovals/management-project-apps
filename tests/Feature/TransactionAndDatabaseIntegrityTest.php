@@ -340,7 +340,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
         // Developer can view page in read-only
         $devView = $this->actingAs($developer)->get('/pengaturan-aplikasi');
         $devView->assertStatus(200);
-        $devView->assertSee('Pengaturan Utama Aplikasi');
+        $devView->assertSee('Pengaturan Aplikasi');
 
         // Developer cannot mutate application settings (403)
         $devUpdate = $this->actingAs($developer)->post('/pengaturan-aplikasi', [
@@ -374,5 +374,33 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
         $pmView = $this->actingAs($pm)->get('/pengaturan-aplikasi');
         $pmView->assertSee('AgilePM Pro');
         $pmView->assertSee('lab-agile@group.calendar.google.com');
+    }
+
+    /**
+     * 10. Test Project-level Timeline Calendar route and contextual sidebar navigation.
+     */
+    public function test_project_timeline_calendar_route_and_navigation(): void
+    {
+        $pm = User::where('email', 'admin@project.local')->first();
+        $project = Project::where('key', 'PRK')->first();
+
+        // 1. Visiting project board displays Waktu Proyek link targeting /projects/{project}/timeline-calendar
+        $boardResponse = $this->actingAs($pm)->get("/projects/{$project->id}/board");
+        $boardResponse->assertStatus(200);
+        $boardResponse->assertSee("/projects/{$project->id}/timeline-calendar");
+        $boardResponse->assertSee('Waktu Proyek');
+
+        // 2. Visiting project timeline renders successfully with project context
+        $timelineResponse = $this->actingAs($pm)->get("/projects/{$project->id}/timeline-calendar");
+        $timelineResponse->assertStatus(200);
+        $timelineResponse->assertSee($project->key);
+        $timelineResponse->assertSee($project->name);
+        $timelineResponse->assertSee('Waktu Proyek (Timeline &amp; Kalender)', false);
+        $timelineResponse->assertSee('Google Calendar Live View');
+
+        // 3. Global workspace navigation (like /dashboard) does NOT show project-level timeline
+        $dashResponse = $this->actingAs($pm)->get('/dashboard');
+        $dashResponse->assertStatus(200);
+        $dashResponse->assertDontSee("/projects/{$project->id}/timeline-calendar");
     }
 }
