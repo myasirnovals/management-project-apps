@@ -1,9 +1,10 @@
-<x-app-layout>
+<x-app-layout :project="$project">
     <x-slot name="header">
-        <div class="flex items-center gap-2">
-            <a href="{{ route('projects.board', $project) }}" class="text-slate-400 hover:text-white">&larr; Kembali ke Board</a>
-            <span class="text-slate-600">/</span>
-            <span>Pengaturan Proyek: {{ $project->name }}</span>
+        <div class="flex items-center gap-3">
+            <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
+                {{ $project->key }}
+            </span>
+            <span class="text-sm font-bold text-white">Pengaturan Proyek: {{ $project->name }}</span>
         </div>
     </x-slot>
 
