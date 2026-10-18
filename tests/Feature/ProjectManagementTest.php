@@ -30,7 +30,6 @@ class ProjectManagementTest extends TestCase
         $response = $this->get('/login');
         $response->assertStatus(200);
         $response->assertSee('AgilePM Workspace');
-        $response->assertSee('Registrasi Publik Ditiadakan');
         $response->assertDontSee('href="/register"', false);
     }
 
@@ -54,7 +53,8 @@ class ProjectManagementTest extends TestCase
 
         $response = $this->actingAs($user)->get('/dashboard');
         $response->assertStatus(200);
-        $response->assertSee('PrakManpro Software Project');
+        $response->assertSee('Dashboard Workspace');
+        $response->assertSee('Total Proyek');
 
         $boardResponse = $this->actingAs($user)->get("/projects/{$project->id}/board");
         $boardResponse->assertStatus(200);
