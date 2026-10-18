@@ -121,7 +121,7 @@ class ProjectManagementTest extends TestCase
 
         // 4. Delete Project
         $delResponse = $this->actingAs($admin)->delete("/projects/{$project->id}");
-        $delResponse->assertRedirect('/projects');
+        $delResponse->assertRedirect('/dashboard');
         $this->assertDatabaseMissing('projects', ['key' => 'ECOM']);
     }
 

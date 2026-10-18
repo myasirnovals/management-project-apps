@@ -31,7 +31,6 @@ class RenderAllViewsTest extends TestCase
 
         $routes = [
             '/dashboard',
-            '/projects',
             '/projects/create',
             "/projects/{$project->id}/edit",
             "/projects/{$project->id}/board",

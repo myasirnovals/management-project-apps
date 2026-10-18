@@ -53,7 +53,7 @@ Route::middleware('auth')->group(function () {
         if ($project) {
             return redirect()->route('projects.edit', $project);
         }
-        return redirect()->route('projects.index')
+        return redirect()->route('dashboard')
             ->with('info', 'Belum ada proyek yang dibuat. Silakan buat proyek terlebih dahulu.');
     })->name('pengaturan');
 

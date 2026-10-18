@@ -14,14 +14,9 @@ use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
-    public function index(): View
+    public function index(): RedirectResponse
     {
-        $projects = Project::with(['owner', 'members', 'activeSprint'])
-            ->withCount(['issues', 'sprints', 'components'])
-            ->latest()
-            ->paginate(10);
-
-        return view('projects.index', compact('projects'));
+        return redirect()->route('dashboard');
     }
 
     public function create(): View
@@ -87,7 +82,7 @@ class ProjectController extends Controller
         $name = $project->name;
         $project->delete();
 
-        return redirect()->route('projects.index')
+        return redirect()->route('dashboard')
             ->with('success', "Proyek '{$name}' telah dihapus.");
     }
 
