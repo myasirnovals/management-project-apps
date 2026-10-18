@@ -42,7 +42,7 @@
 
                     <!-- Progress Bar -->
                     <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500" style="width: {{ $pct }}%"></div>
+                        <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500" @style(["width: {$pct}%"])></div>
                     </div>
 
                     <!-- Child issues of this epic -->

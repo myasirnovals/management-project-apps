@@ -140,7 +140,7 @@
                                             <span class="font-bold text-slate-200">{{ $activeSprint->completion_percentage }}% Selesai ({{ $activeSprint->completed_story_points }}/{{ $activeSprint->total_story_points }} SP)</span>
                                         </div>
                                         <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                                            <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-500" style="width: {{ $activeSprint->completion_percentage }}%"></div>
+                                            <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-500" @style(["width: {$activeSprint->completion_percentage}%"])></div>
                                         </div>
                                     </div>
                                 </div>

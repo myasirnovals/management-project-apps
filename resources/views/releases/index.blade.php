@@ -81,7 +81,7 @@
                             </div>
                         </div>
                         <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full" style="width: {{ $v->progress_percentage }}%"></div>
+                            <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full" @style(["width: {$v->progress_percentage}%"])></div>
                         </div>
                     </div>
 

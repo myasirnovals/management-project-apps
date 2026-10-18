@@ -55,11 +55,11 @@
                             <div class="space-y-1">
                                 <!-- Commitment Bar -->
                                 <div class="w-full h-3 rounded-full bg-slate-950 overflow-hidden flex">
-                                    <div class="bg-slate-600 h-full rounded-full transition-all duration-500" style="width: {{ min(100, $v['commitment'] * 5) }}%"></div>
+                                    <div class="bg-slate-600 h-full rounded-full transition-all duration-500" @style(['width: ' . min(100, $v['commitment'] * 5) . '%'])></div>
                                 </div>
                                 <!-- Completed Bar -->
                                 <div class="w-full h-3 rounded-full bg-slate-950 overflow-hidden flex">
-                                    <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: {{ min(100, $v['completed'] * 5) }}%"></div>
+                                    <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" @style(['width: ' . min(100, $v['completed'] * 5) . '%'])></div>
                                 </div>
                             </div>
                         </div>

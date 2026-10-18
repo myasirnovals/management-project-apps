@@ -31,16 +31,16 @@
             <!-- Visual Flow Bar (Orange for To Do, Teal for In Progress, Amber for Review, Purple/Green for Done - Gambar 7.4) -->
             <div>
                 <div class="w-full h-8 rounded-2xl overflow-hidden flex shadow-inner bg-slate-950">
-                    <div style="width: {{ $pctToDo }}%" class="bg-amber-500 h-full flex items-center justify-center text-[10px] font-bold text-black font-mono transition-all duration-500" title="To Do: {{ $statusCounts['to_do'] }} issues">
+                    <div @style(["width: {$pctToDo}%"]) class="bg-amber-500 h-full flex items-center justify-center text-[10px] font-bold text-black font-mono transition-all duration-500" title="To Do: {{ $statusCounts['to_do'] }} issues">
                         @if($pctToDo > 8){{ $pctToDo }}%@endif
                     </div>
-                    <div style="width: {{ $pctInProgress }}%" class="bg-teal-500 h-full flex items-center justify-center text-[10px] font-bold text-black font-mono transition-all duration-500" title="In Progress: {{ $statusCounts['in_progress'] }} issues">
+                    <div @style(["width: {$pctInProgress}%"]) class="bg-teal-500 h-full flex items-center justify-center text-[10px] font-bold text-black font-mono transition-all duration-500" title="In Progress: {{ $statusCounts['in_progress'] }} issues">
                         @if($pctInProgress > 8){{ $pctInProgress }}%@endif
                     </div>
-                    <div style="width: {{ $pctInReview }}%" class="bg-indigo-500 h-full flex items-center justify-center text-[10px] font-bold text-white font-mono transition-all duration-500" title="In Review: {{ $statusCounts['in_review'] }} issues">
+                    <div @style(["width: {$pctInReview}%"]) class="bg-indigo-500 h-full flex items-center justify-center text-[10px] font-bold text-white font-mono transition-all duration-500" title="In Review: {{ $statusCounts['in_review'] }} issues">
                         @if($pctInReview > 8){{ $pctInReview }}%@endif
                     </div>
-                    <div style="width: {{ $pctDone }}%" class="bg-purple-600 h-full flex items-center justify-center text-[10px] font-bold text-white font-mono transition-all duration-500" title="Done: {{ $statusCounts['done'] }} issues">
+                    <div @style(["width: {$pctDone}%"]) class="bg-purple-600 h-full flex items-center justify-center text-[10px] font-bold text-white font-mono transition-all duration-500" title="Done: {{ $statusCounts['done'] }} issues">
                         @if($pctDone > 8){{ $pctDone }}%@endif
                     </div>
                 </div>
