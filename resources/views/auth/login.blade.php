@@ -84,49 +84,5 @@
                 </button>
             </div>
         </form>
-
-        <!-- Quick Credentials Switcher (Helper for instant testing) -->
-        <div class="mt-6 pt-6 border-t border-slate-800">
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 text-center">Akun Bawaan (Klik untuk Isi Cepat):</p>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <button type="button" onclick="fillCredentials('admin@project.local', 'password123')"
-                    class="p-2 text-left rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition">
-                    <div class="font-semibold text-indigo-400">Project Manager</div>
-                    <div class="text-[11px] text-slate-400 truncate">admin@project.local</div>
-                </button>
-                <button type="button" onclick="fillCredentials('po@project.local', 'password123')"
-                    class="p-2 text-left rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition">
-                    <div class="font-semibold text-blue-400">Product Owner</div>
-                    <div class="text-[11px] text-slate-400 truncate">po@project.local</div>
-                </button>
-                <button type="button" onclick="fillCredentials('yessi@project.local', 'password123')"
-                    class="p-2 text-left rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition">
-                    <div class="font-semibold text-emerald-400">Frontend Dev</div>
-                    <div class="text-[11px] text-slate-400 truncate">yessi@project.local</div>
-                </button>
-                <button type="button" onclick="fillCredentials('eprian@project.local', 'password123')"
-                    class="p-2 text-left rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition">
-                    <div class="font-semibold text-purple-400">Backend Dev</div>
-                    <div class="text-[11px] text-slate-400 truncate">eprian@project.local</div>
-                </button>
-            </div>
-        </div>
-
-        <!-- Note about no registration -->
-        <div class="mt-6 flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/40 border border-slate-800 text-xs text-slate-400">
-            <svg class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>
-                <strong>Registrasi Publik Ditiadakan:</strong> Akun anggota tim dibuat dan dikelola langsung oleh Admin / Project Manager di menu <em>Kelola Tim</em>.
-            </span>
-        </div>
     </div>
-
-    <script>
-        function fillCredentials(email, password) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = password;
-        }
-    </script>
 </x-guest-layout>
