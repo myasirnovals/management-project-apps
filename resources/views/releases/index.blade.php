@@ -45,7 +45,10 @@
                         <!-- Action: Release or Delete -->
                         <div class="flex items-center gap-2">
                             @if($v->status->value === 'unreleased')
-                                <button type="button" onclick="openReleaseModal({{ json_encode($v) }})"
+                                <button type="button"
+                                    data-version-id="{{ $v->id }}"
+                                    data-version-name="{{ $v->name }}"
+                                    onclick="openReleaseModal(this)"
                                     class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition">
                                     Rilis Versi Ini (Release) &rarr;
                                 </button>
@@ -182,10 +185,12 @@
         function openCreateVersionModal() { document.getElementById('createVersionModal').classList.remove('hidden'); }
         function closeCreateVersionModal() { document.getElementById('createVersionModal').classList.add('hidden'); }
 
-        function openReleaseModal(version) {
-            document.getElementById('release_title').innerText = `Konfirmasi Rilis ${version.name}`;
-            document.getElementById('release_desc').innerText = `Memulai tahap deployment untuk ${version.name}.`;
-            document.getElementById('releaseForm').action = `/projects/{{ $project->id }}/releases/${version.id}/release`;
+        function openReleaseModal(el) {
+            const versionId = el.dataset.versionId;
+            const versionName = el.dataset.versionName;
+            document.getElementById('release_title').innerText = `Konfirmasi Rilis ${versionName}`;
+            document.getElementById('release_desc').innerText = `Memulai tahap deployment untuk ${versionName}.`;
+            document.getElementById('releaseForm').action = `/projects/{{ $project->id }}/releases/${versionId}/release`;
             document.getElementById('releaseScopeModal').classList.remove('hidden');
         }
         function closeReleaseModal() { document.getElementById('releaseScopeModal').classList.add('hidden'); }

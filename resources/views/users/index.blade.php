@@ -90,7 +90,14 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <!-- Edit button -->
-                                        <button type="button" onclick="openEditMemberModal({{ json_encode($user) }})"
+                                        <button type="button"
+                                            data-user-id="{{ $user->id }}"
+                                            data-user-name="{{ $user->name }}"
+                                            data-user-email="{{ $user->email }}"
+                                            data-user-role="{{ $user->role->value }}"
+                                            data-user-job-title="{{ $user->job_title }}"
+                                            data-user-is-active="{{ $user->is_active ? '1' : '0' }}"
+                                            onclick="openEditMemberModal(this)"
                                             class="p-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-400 transition" title="Edit Anggota">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -286,13 +293,13 @@
             document.getElementById('addMemberModal').classList.add('hidden');
         }
 
-        function openEditMemberModal(user) {
-            document.getElementById('editMemberForm').action = '/users/' + user.id;
-            document.getElementById('edit_name').value = user.name;
-            document.getElementById('edit_email').value = user.email;
-            document.getElementById('edit_role').value = user.role;
-            document.getElementById('edit_job_title').value = user.job_title || '';
-            document.getElementById('edit_status').value = user.is_active ? '1' : '0';
+        function openEditMemberModal(el) {
+            document.getElementById('editMemberForm').action = '/users/' + el.dataset.userId;
+            document.getElementById('edit_name').value = el.dataset.userName;
+            document.getElementById('edit_email').value = el.dataset.userEmail;
+            document.getElementById('edit_role').value = el.dataset.userRole;
+            document.getElementById('edit_job_title').value = el.dataset.userJobTitle || '';
+            document.getElementById('edit_status').value = el.dataset.userIsActive;
             document.getElementById('editMemberModal').classList.remove('hidden');
         }
 

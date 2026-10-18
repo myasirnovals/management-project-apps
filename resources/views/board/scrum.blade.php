@@ -142,7 +142,8 @@
                     <div class="space-y-3 flex-1 overflow-y-auto">
                         @forelse($col['issues'] as $issue)
                             <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition cursor-pointer group"
-                                onclick="openIssueDetailModal({{ $issue->id }})">
+                                data-issue-id="{{ $issue->id }}"
+                                onclick="openIssueDetailModal(this.dataset.issueId)">
                                 
                                 <!-- Card Header: Key & Priority -->
                                 <div class="flex items-center justify-between mb-2">

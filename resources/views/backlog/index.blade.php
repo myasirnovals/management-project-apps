@@ -97,7 +97,11 @@
                             </span>
 
                             @if($sprint->status->value === 'planning')
-                                <button type="button" onclick="openStartSprintModal({{ json_encode($sprint) }})"
+                                <button type="button"
+                                    data-sprint-id="{{ $sprint->id }}"
+                                    data-sprint-name="{{ $sprint->name }}"
+                                    data-sprint-goal="{{ $sprint->goal }}"
+                                    onclick="openStartSprintModal(this)"
                                     class="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition">
                                     Mulai Sprint &rarr;
                                 </button>
@@ -218,7 +222,10 @@
                                     @if($sprints->isNotEmpty())
                                         <div class="flex items-center gap-1">
                                             @foreach($sprints as $sp)
-                                                <button type="button" onclick="moveSingleIssueToSprint({{ $issue->id }}, {{ $sp->id }})"
+                                                <button type="button"
+                                                    data-issue-id="{{ $issue->id }}"
+                                                    data-sprint-id="{{ $sp->id }}"
+                                                    onclick="handleMoveSingleIssue(this)"
                                                     class="px-2 py-1 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white rounded-lg text-[10px] font-semibold transition" title="Pindahkan ke {{ $sp->name }}">
                                                     &uarr; {{ $sp->name }}
                                                 </button>
@@ -406,13 +413,20 @@
         function openCleanUpModal() { document.getElementById('cleanUpModal').classList.remove('hidden'); }
         function closeCleanUpModal() { document.getElementById('cleanUpModal').classList.add('hidden'); }
 
-        function openStartSprintModal(sprint) {
-            document.getElementById('startSprintForm').action = `/projects/{{ $project->id }}/sprints/${sprint.id}/start`;
-            document.getElementById('start_name').value = sprint.name;
-            document.getElementById('start_goal').value = sprint.goal || '';
+        function openStartSprintModal(el) {
+            const sprintId = el.dataset.sprintId;
+            const name = el.dataset.sprintName;
+            const goal = el.dataset.sprintGoal || '';
+            document.getElementById('startSprintForm').action = `/projects/{{ $project->id }}/sprints/${sprintId}/start`;
+            document.getElementById('start_name').value = name;
+            document.getElementById('start_goal').value = goal;
             document.getElementById('startSprintModal').classList.remove('hidden');
         }
         function closeStartSprintModal() { document.getElementById('startSprintModal').classList.add('hidden'); }
+
+        function handleMoveSingleIssue(btn) {
+            moveSingleIssueToSprint(btn.dataset.issueId, btn.dataset.sprintId);
+        }
 
         async function moveSingleIssueToSprint(issueId, sprintId) {
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
