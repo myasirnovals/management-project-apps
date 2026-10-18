@@ -20,11 +20,16 @@
                 </label>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label class="relative flex flex-col p-5 bg-slate-950/60 border-2 border-indigo-600 rounded-2xl cursor-pointer hover:border-indigo-500 transition select-none">
-                        <input type="radio" name="type" value="scrum" checked class="sr-only peer">
+                    <!-- Scrum Option -->
+                    <label id="card_scrum" onclick="selectFramework('scrum')"
+                        class="framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 {{ old('type', 'scrum') === 'scrum' ? 'border-indigo-600 bg-indigo-950/30 shadow-md shadow-indigo-600/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700' }}">
+                        <input type="radio" name="type" id="radio_scrum" value="scrum" {{ old('type', 'scrum') === 'scrum' ? 'checked' : '' }} onchange="selectFramework('scrum')" class="sr-only">
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-lg">
                                 🔄
+                            </div>
+                            <div id="dot_scrum" class="w-5 h-5 rounded-full border-2 {{ old('type', 'scrum') === 'scrum' ? 'border-indigo-500 bg-indigo-500/20' : 'border-slate-700 bg-transparent' }} flex items-center justify-center transition">
+                                <div class="w-2.5 h-2.5 rounded-full {{ old('type', 'scrum') === 'scrum' ? 'bg-indigo-500' : 'bg-transparent' }} transition"></div>
                             </div>
                         </div>
                         <h4 class="font-bold text-white text-sm">Scrum Project</h4>
@@ -33,11 +38,16 @@
                         </p>
                     </label>
 
-                    <label class="relative flex flex-col p-5 bg-slate-950/60 border border-slate-800 rounded-2xl cursor-pointer hover:border-slate-700 transition select-none peer-checked:border-indigo-600">
-                        <input type="radio" name="type" value="kanban" class="sr-only peer">
+                    <!-- Kanban Option -->
+                    <label id="card_kanban" onclick="selectFramework('kanban')"
+                        class="framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 {{ old('type') === 'kanban' ? 'border-emerald-500 bg-emerald-950/30 shadow-md shadow-emerald-500/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700' }}">
+                        <input type="radio" name="type" id="radio_kanban" value="kanban" {{ old('type') === 'kanban' ? 'checked' : '' }} onchange="selectFramework('kanban')" class="sr-only">
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
                                 📊
+                            </div>
+                            <div id="dot_kanban" class="w-5 h-5 rounded-full border-2 {{ old('type') === 'kanban' ? 'border-emerald-500 bg-emerald-500/20' : 'border-slate-700 bg-transparent' }} flex items-center justify-center transition">
+                                <div class="w-2.5 h-2.5 rounded-full {{ old('type') === 'kanban' ? 'bg-emerald-500' : 'bg-transparent' }} transition"></div>
                             </div>
                         </div>
                         <h4 class="font-bold text-white text-sm">Kanban Project</h4>
@@ -107,6 +117,39 @@
     </div>
 
     <script>
+        function selectFramework(type) {
+            const radioScrum = document.getElementById('radio_scrum');
+            const radioKanban = document.getElementById('radio_kanban');
+            const cardScrum = document.getElementById('card_scrum');
+            const cardKanban = document.getElementById('card_kanban');
+            const dotScrum = document.getElementById('dot_scrum');
+            const dotKanban = document.getElementById('dot_kanban');
+
+            if (type === 'scrum') {
+                radioScrum.checked = true;
+                // Active Scrum
+                cardScrum.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-indigo-600 bg-indigo-950/30 shadow-md shadow-indigo-600/10';
+                dotScrum.className = 'w-5 h-5 rounded-full border-2 border-indigo-500 bg-indigo-500/20 flex items-center justify-center transition';
+                dotScrum.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-indigo-500 transition';
+
+                // Inactive Kanban
+                cardKanban.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-slate-800 bg-slate-950/60 hover:border-slate-700';
+                dotKanban.className = 'w-5 h-5 rounded-full border-2 border-slate-700 bg-transparent flex items-center justify-center transition';
+                dotKanban.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-transparent transition';
+            } else {
+                radioKanban.checked = true;
+                // Active Kanban
+                cardKanban.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-emerald-500 bg-emerald-950/30 shadow-md shadow-emerald-500/10';
+                dotKanban.className = 'w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500/20 flex items-center justify-center transition';
+                dotKanban.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 transition';
+
+                // Inactive Scrum
+                cardScrum.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-slate-800 bg-slate-950/60 hover:border-slate-700';
+                dotScrum.className = 'w-5 h-5 rounded-full border-2 border-slate-700 bg-transparent flex items-center justify-center transition';
+                dotScrum.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-transparent transition';
+            }
+        }
+
         function generateKeyFromName(name) {
             if (!name) return;
             const words = name.trim().split(/\s+/);
