@@ -1,35 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-2">
-                <span>Kelola Tim & Anggota</span>
-                <span class="text-xs font-normal text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">
-                    Total: {{ $users->total() }} Akun
-                </span>
-            </div>
-            <button type="button" onclick="openAddMemberModal()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-                <span>+ Tambah Anggota Baru</span>
-            </button>
-        </div>
+        <span>Kelola Tim & Anggota</span>
+    </x-slot>
+
+    <x-slot name="headerActions">
+        <button type="button" onclick="openAddMemberModal()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            <span>+ Tambah Anggota Baru</span>
+        </button>
     </x-slot>
 
     <div class="space-y-6 max-w-7xl mx-auto">
         <!-- Architecture Explanation Banner -->
-        <div class="bg-indigo-950/30 border border-indigo-500/20 rounded-2xl p-4 flex items-start gap-3">
-            <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl shrink-0 mt-0.5">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-            </div>
-            <div class="text-xs text-indigo-200">
-                <strong class="font-bold text-indigo-300 block mb-0.5">Sistem Autentikasi Khusus (No Public Registration)</strong>
-                Aplikasi ini dirancang khusus untuk lingkungan profesional/akademik tertutup: pengunjung umum tidak dapat mendaftar sendiri. Anda sebagai Project Manager memiliki wewenang penuh untuk menambahkan akun anggota tim, menentukan role (Product Owner, Scrum Master, Developer), serta memberikan kredensial login kepada mereka.
-            </div>
-        </div>
 
         <!-- Users Table Card -->
         <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">

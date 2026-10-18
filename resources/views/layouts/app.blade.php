@@ -205,6 +205,10 @@
 
             <!-- Right: Actions & Quick Create Button -->
             <div class="flex items-center gap-3">
+                @isset($headerActions)
+                    {{ $headerActions }}
+                @endisset
+
                 @if($currentProject)
                     <!-- Fast "+ Buat Issue" Jira Style Button -->
                     <button type="button" onclick="openCreateIssueModal()"
