@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -126,25 +127,31 @@ class BacklogController extends Controller
         }
 
         if ($action === 'delete') {
-            Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->delete();
+            DB::transaction(function () use ($project, $issueIds) {
+                Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->delete();
+            });
             return back()->with('success', count($issueIds) . ' issue berhasil dihapus secara massal.');
         }
 
         if ($action === 'change_status') {
             $status = $request->input('target_status');
             if ($status) {
-                Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->update([
-                    'status' => $status,
-                ]);
+                DB::transaction(function () use ($project, $issueIds, $status) {
+                    Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->update([
+                        'status' => $status,
+                    ]);
+                });
                 return back()->with('success', count($issueIds) . " issue berhasil diubah statusnya menjadi {$status}.");
             }
         }
 
         if ($action === 'move_sprint') {
             $sprintId = $request->input('target_sprint_id') ?: null;
-            Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->update([
-                'sprint_id' => $sprintId,
-            ]);
+            DB::transaction(function () use ($project, $issueIds, $sprintId) {
+                Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->update([
+                    'sprint_id' => $sprintId,
+                ]);
+            });
             return back()->with('success', count($issueIds) . ' issue berhasil dipindahkan.');
         }
 

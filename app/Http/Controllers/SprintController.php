@@ -10,6 +10,7 @@ use App\Models\Sprint;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SprintController extends Controller
 {
@@ -85,19 +86,21 @@ class SprintController extends Controller
         $incompleteIssues = $sprint->issues()->where('status', '!=', IssueStatus::DONE->value)->get();
         $moveTarget = $request->input('incomplete_action', 'backlog'); // 'backlog' or next sprint_id
 
-        if ($moveTarget === 'backlog') {
-            foreach ($incompleteIssues as $issue) {
-                $issue->update(['sprint_id' => null]);
+        DB::transaction(function () use ($sprint, $incompleteIssues, $moveTarget) {
+            if ($moveTarget === 'backlog') {
+                foreach ($incompleteIssues as $issue) {
+                    $issue->update(['sprint_id' => null]);
+                }
+            } elseif (is_numeric($moveTarget)) {
+                foreach ($incompleteIssues as $issue) {
+                    $issue->update(['sprint_id' => (int) $moveTarget]);
+                }
             }
-        } elseif (is_numeric($moveTarget)) {
-            foreach ($incompleteIssues as $issue) {
-                $issue->update(['sprint_id' => (int) $moveTarget]);
-            }
-        }
 
-        $sprint->update([
-            'status' => SprintStatus::COMPLETED,
-        ]);
+            $sprint->update([
+                'status' => SprintStatus::COMPLETED,
+            ]);
+        });
 
         return redirect()->route('projects.backlog', $project)
             ->with('success', "Sprint '{$sprint->name}' telah diselesaikan! Poin cerita yang selesai telah tercatat dalam laporan.");

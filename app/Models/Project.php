@@ -71,9 +71,7 @@ class Project extends Model
      */
     public function generateNextIssueKey(): string
     {
-        $lastIssue = $this->issues()
-            ->orderByRaw('CAST(SUBSTR(issue_key, INSTR(issue_key, "-") + 1) AS UNSIGNED) DESC')
-            ->first();
+        $lastIssue = $this->issues()->reorder('id', 'desc')->first();
 
         $nextNumber = 1;
         if ($lastIssue && preg_match('/-(\d+)$/', $lastIssue->issue_key, $matches)) {
