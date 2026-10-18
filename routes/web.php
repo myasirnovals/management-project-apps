@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppSettingsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\BoardController;
@@ -46,6 +47,11 @@ Route::middleware('auth')->group(function () {
 
     // Project Calendar (/kalender-proyek)
     Route::get('/kalender-proyek', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::post('/kalender-proyek/settings', [CalendarController::class, 'updateSettings'])->name('calendar.settings.update');
+
+    // Application Settings (/pengaturan-aplikasi)
+    Route::get('/pengaturan-aplikasi', [AppSettingsController::class, 'index'])->name('app.settings');
+    Route::post('/pengaturan-aplikasi', [AppSettingsController::class, 'update'])->name('app.settings.update');
 
     // Project Settings Shortcut (/pengaturan)
     Route::get('/pengaturan', function () {

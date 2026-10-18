@@ -115,6 +115,51 @@ class CalendarController extends Controller
             ->take(5)
             ->get();
 
+        // Load Google Calendar settings
+        $settingsFile = storage_path('app/calendar_settings.json');
+        $calendarSettings = [
+            'calendar_id' => '',
+            'timezone' => 'Asia/Jakarta',
+            'view_mode' => 'MONTH',
+            'custom_embed_url' => '',
+        ];
+
+        if (file_exists($settingsFile)) {
+            $saved = json_decode(file_get_contents($settingsFile), true);
+            if (is_array($saved)) {
+                $calendarSettings = array_merge($calendarSettings, $saved);
+            }
+        }
+
+        // Generate embed URL
+        $calendarId = trim($calendarSettings['calendar_id'] ?? '');
+        $timezone = $calendarSettings['timezone'] ?? 'Asia/Jakarta';
+        $viewMode = $calendarSettings['view_mode'] ?? 'MONTH';
+
+        if (!empty($calendarSettings['custom_embed_url'])) {
+            $embedUrl = $calendarSettings['custom_embed_url'];
+        } elseif (!empty($calendarId)) {
+            $cid = urlencode($calendarId);
+            $tz = urlencode($timezone);
+            $embedUrl = "https://calendar.google.com/calendar/embed?src={$cid}&ctz={$tz}&mode={$viewMode}&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=1";
+        } else {
+            // Default public demonstration calendar (Indonesian Holidays & workspace default)
+            $cid = urlencode('id.indonesian#holiday@group.v.calendar.google.com');
+            $tz = urlencode($timezone);
+            $embedUrl = "https://calendar.google.com/calendar/embed?src={$cid}&ctz={$tz}&mode={$viewMode}&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=1";
+        }
+
+        // Direct action URLs
+        $createEventUrl = !empty($calendarId)
+            ? "https://calendar.google.com/calendar/u/0/r/eventedit?src=" . urlencode($calendarId)
+            : "https://calendar.google.com/calendar/u/0/r/eventedit";
+
+        $openCalendarUrl = !empty($calendarId)
+            ? "https://calendar.google.com/calendar/u/0/r?cid=" . urlencode($calendarId)
+            : "https://calendar.google.com/calendar";
+
+        $isProjectManager = auth()->check() && auth()->user()->isProjectManager();
+
         return view('calendar.index', compact(
             'monthDate',
             'selectedMonth',
@@ -127,7 +172,40 @@ class CalendarController extends Controller
             'period',
             'eventsByDate',
             'activeSprints',
-            'upcomingIssues'
+            'upcomingIssues',
+            'calendarSettings',
+            'embedUrl',
+            'createEventUrl',
+            'openCalendarUrl',
+            'isProjectManager'
         ));
+    }
+
+    /**
+     * Update Google Calendar configuration settings (PM only).
+     */
+    public function updateSettings(Request $request)
+    {
+        if (!auth()->check() || !auth()->user()->isProjectManager()) {
+            abort(403, 'Hanya Project Manager atau Scrum Master yang memiliki wewenang untuk mengubah pengaturan kalender proyek.');
+        }
+
+        $validated = $request->validate([
+            'calendar_id' => ['nullable', 'string', 'max:255'],
+            'timezone' => ['required', 'string', 'max:100'],
+            'view_mode' => ['required', 'in:MONTH,WEEK,AGENDA'],
+            'custom_embed_url' => ['nullable', 'url', 'max:1000'],
+        ]);
+
+        $settingsFile = storage_path('app/calendar_settings.json');
+        $directory = dirname($settingsFile);
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents($settingsFile, json_encode($validated, JSON_PRETTY_PRINT));
+
+        return redirect()->route('calendar.index')
+            ->with('success', 'Konfigurasi Google Calendar bersama berhasil diperbarui!');
     }
 }

@@ -298,4 +298,81 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
         $createIssueRes = $this->postJson("/projects/{$project->id}/issues", ['title' => 'Hacker Issue']);
         $createIssueRes->assertStatus(401);
     }
+
+    /**
+     * 8. Test Google Calendar settings can only be updated by Project Manager.
+     */
+    public function test_google_calendar_settings_authorization(): void
+    {
+        $pm = User::where('email', 'admin@project.local')->first();
+        $developer = User::where('role', \App\Enums\UserRole::DEVELOPER->value)->first();
+
+        // Developer should be forbidden (403)
+        $devResponse = $this->actingAs($developer)->post('/kalender-proyek/settings', [
+            'calendar_id' => 'test-team@group.calendar.google.com',
+            'timezone' => 'Asia/Jakarta',
+            'view_mode' => 'MONTH',
+        ]);
+        $devResponse->assertStatus(403);
+
+        // PM should succeed
+        $pmResponse = $this->actingAs($pm)->post('/kalender-proyek/settings', [
+            'calendar_id' => 'agile-team@group.calendar.google.com',
+            'timezone' => 'Asia/Jakarta',
+            'view_mode' => 'MONTH',
+        ]);
+        $pmResponse->assertRedirect('/kalender-proyek');
+        $pmResponse->assertSessionHas('success');
+
+        // Check view reflects calendar id
+        $calendarPage = $this->actingAs($pm)->get('/kalender-proyek');
+        $calendarPage->assertSee('agile-team@group.calendar.google.com');
+    }
+
+    /**
+     * 9. Test Application Settings (Google Calendar & SMTP) authorization.
+     */
+    public function test_application_settings_authorization(): void
+    {
+        $pm = User::where('email', 'admin@project.local')->first();
+        $developer = User::where('role', \App\Enums\UserRole::DEVELOPER->value)->first();
+
+        // Developer can view page in read-only
+        $devView = $this->actingAs($developer)->get('/pengaturan-aplikasi');
+        $devView->assertStatus(200);
+        $devView->assertSee('Pengaturan Utama Aplikasi');
+
+        // Developer cannot mutate application settings (403)
+        $devUpdate = $this->actingAs($developer)->post('/pengaturan-aplikasi', [
+            'app_name' => 'Hacked App',
+            'default_timezone' => 'Asia/Jakarta',
+            'calendar_timezone' => 'Asia/Jakarta',
+            'calendar_view_mode' => 'MONTH',
+            'mail_mailer' => 'smtp',
+        ]);
+        $devUpdate->assertStatus(403);
+
+        // PM can update application settings
+        $pmUpdate = $this->actingAs($pm)->post('/pengaturan-aplikasi', [
+            'app_name' => 'AgilePM Pro',
+            'organization_name' => 'Software Engineering Lab',
+            'default_timezone' => 'Asia/Jakarta',
+            'calendar_id' => 'lab-agile@group.calendar.google.com',
+            'calendar_timezone' => 'Asia/Jakarta',
+            'calendar_view_mode' => 'MONTH',
+            'mail_mailer' => 'smtp',
+            'mail_host' => 'smtp.gmail.com',
+            'mail_port' => 587,
+            'mail_encryption' => 'tls',
+            'mail_from_address' => 'admin@project.local',
+            'mail_from_name' => 'AgilePM Admin',
+        ]);
+        $pmUpdate->assertRedirect('/pengaturan-aplikasi');
+        $pmUpdate->assertSessionHas('success');
+
+        // Check view reflects updated settings
+        $pmView = $this->actingAs($pm)->get('/pengaturan-aplikasi');
+        $pmView->assertSee('AgilePM Pro');
+        $pmView->assertSee('lab-agile@group.calendar.google.com');
+    }
 }
