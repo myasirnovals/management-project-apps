@@ -1,8 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-2">
-            <a href="{{ route('projects.index') }}" class="text-slate-400 hover:text-white">&larr; Kembali</a>
-            <span class="text-slate-600">/</span>
             <span>Buat Proyek Baru</span>
         </div>
     </x-slot>
@@ -10,7 +8,6 @@
     <div class="max-w-3xl mx-auto space-y-6">
         <div class="text-center mb-8">
             <h2 class="text-2xl font-black text-white">Inisiasi Proyek Manajemen (Agile / Scrum)</h2>
-            <p class="text-xs text-slate-400 mt-1">Sesuai panduan praktikum JIRA/Scrum: tentukan tipe alur kerja, nama proyek, dan key unik.</p>
         </div>
 
         <form method="POST" action="{{ route('projects.store') }}" class="space-y-6">
@@ -29,7 +26,6 @@
                             <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
                                 🔄
                             </div>
-                            <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">Direkomendasikan</span>
                         </div>
                         <h4 class="font-bold text-white text-sm">Scrum Project</h4>
                         <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
@@ -43,7 +39,6 @@
                             <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
                                 📊
                             </div>
-                            <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Alur Berkelanjutan</span>
                         </div>
                         <h4 class="font-bold text-white text-sm">Kanban Project</h4>
                         <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
@@ -100,7 +95,7 @@
 
             <!-- Submit -->
             <div class="flex items-center justify-end gap-4 pt-2">
-                <a href="{{ route('projects.index') }}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition">
+                <a href="{{ route('dashboard') }}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition">
                     Batal
                 </a>
                 <button type="submit"
