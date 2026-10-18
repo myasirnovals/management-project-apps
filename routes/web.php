@@ -43,6 +43,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/members', [ProjectController::class, 'addMember'])->name('projects.members.add');
     Route::delete('/projects/{project}/members/{user}', [ProjectController::class, 'removeMember'])->name('projects.members.remove');
 
+    // Project Settings Shortcut (/pengaturan)
+    Route::get('/pengaturan', function () {
+        $project = \App\Models\Project::first();
+        if ($project) {
+            return redirect()->route('projects.edit', $project);
+        }
+        return redirect()->route('projects.index')
+            ->with('info', 'Belum ada proyek yang dibuat. Silakan buat proyek terlebih dahulu.');
+    })->name('pengaturan');
+
     // Nested Project Routes
     Route::prefix('projects/{project}')->name('projects.')->group(function () {
         // Boards (Modul III & IV)
