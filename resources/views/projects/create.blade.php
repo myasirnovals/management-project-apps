@@ -28,8 +28,11 @@
                             <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-lg">
                                 🔄
                             </div>
-                            <div id="dot_scrum" class="w-5 h-5 rounded-full border-2 {{ old('type', 'scrum') === 'scrum' ? 'border-indigo-500 bg-indigo-500/20' : 'border-slate-700 bg-transparent' }} flex items-center justify-center transition">
-                                <div class="w-2.5 h-2.5 rounded-full {{ old('type', 'scrum') === 'scrum' ? 'bg-indigo-500' : 'bg-transparent' }} transition"></div>
+                            <div class="flex items-center gap-2">
+                                <span id="badge_scrum" class="{{ old('type', 'scrum') === 'scrum' ? '' : 'hidden' }} text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/30">Terpilih</span>
+                                <div id="dot_scrum" class="w-5 h-5 rounded-full border-2 {{ old('type', 'scrum') === 'scrum' ? 'border-indigo-500 bg-indigo-500/20' : 'border-slate-700 bg-transparent' }} flex items-center justify-center transition">
+                                    <div class="w-2.5 h-2.5 rounded-full {{ old('type', 'scrum') === 'scrum' ? 'bg-indigo-500' : 'bg-transparent' }} transition"></div>
+                                </div>
                             </div>
                         </div>
                         <h4 class="font-bold text-white text-sm">Scrum Project</h4>
@@ -46,8 +49,11 @@
                             <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
                                 📊
                             </div>
-                            <div id="dot_kanban" class="w-5 h-5 rounded-full border-2 {{ old('type') === 'kanban' ? 'border-emerald-500 bg-emerald-500/20' : 'border-slate-700 bg-transparent' }} flex items-center justify-center transition">
-                                <div class="w-2.5 h-2.5 rounded-full {{ old('type') === 'kanban' ? 'bg-emerald-500' : 'bg-transparent' }} transition"></div>
+                            <div class="flex items-center gap-2">
+                                <span id="badge_kanban" class="{{ old('type') === 'kanban' ? '' : 'hidden' }} text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">Terpilih</span>
+                                <div id="dot_kanban" class="w-5 h-5 rounded-full border-2 {{ old('type') === 'kanban' ? 'border-emerald-500 bg-emerald-500/20' : 'border-slate-700 bg-transparent' }} flex items-center justify-center transition">
+                                    <div class="w-2.5 h-2.5 rounded-full {{ old('type') === 'kanban' ? 'bg-emerald-500' : 'bg-transparent' }} transition"></div>
+                                </div>
                             </div>
                         </div>
                         <h4 class="font-bold text-white text-sm">Kanban Project</h4>
@@ -125,28 +131,35 @@
             const dotScrum = document.getElementById('dot_scrum');
             const dotKanban = document.getElementById('dot_kanban');
 
+            const badgeScrum = document.getElementById('badge_scrum');
+            const badgeKanban = document.getElementById('badge_kanban');
+
             if (type === 'scrum') {
                 radioScrum.checked = true;
                 // Active Scrum
                 cardScrum.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-indigo-600 bg-indigo-950/30 shadow-md shadow-indigo-600/10';
                 dotScrum.className = 'w-5 h-5 rounded-full border-2 border-indigo-500 bg-indigo-500/20 flex items-center justify-center transition';
                 dotScrum.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-indigo-500 transition';
+                if (badgeScrum) badgeScrum.classList.remove('hidden');
 
                 // Inactive Kanban
                 cardKanban.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-slate-800 bg-slate-950/60 hover:border-slate-700';
                 dotKanban.className = 'w-5 h-5 rounded-full border-2 border-slate-700 bg-transparent flex items-center justify-center transition';
                 dotKanban.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-transparent transition';
+                if (badgeKanban) badgeKanban.classList.add('hidden');
             } else {
                 radioKanban.checked = true;
                 // Active Kanban
                 cardKanban.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-emerald-500 bg-emerald-950/30 shadow-md shadow-emerald-500/10';
                 dotKanban.className = 'w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500/20 flex items-center justify-center transition';
                 dotKanban.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 transition';
+                if (badgeKanban) badgeKanban.classList.remove('hidden');
 
                 // Inactive Scrum
                 cardScrum.className = 'framework-card relative flex flex-col p-5 rounded-2xl cursor-pointer transition select-none border-2 border-slate-800 bg-slate-950/60 hover:border-slate-700';
                 dotScrum.className = 'w-5 h-5 rounded-full border-2 border-slate-700 bg-transparent flex items-center justify-center transition';
                 dotScrum.firstElementChild.className = 'w-2.5 h-2.5 rounded-full bg-transparent transition';
+                if (badgeScrum) badgeScrum.classList.add('hidden');
             }
         }
 
