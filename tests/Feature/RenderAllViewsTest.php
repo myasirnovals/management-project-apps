@@ -46,6 +46,7 @@ class RenderAllViewsTest extends TestCase
             "/projects/{$project->id}/reports/cfd",
             "/projects/{$project->id}/reports/epic",
             '/users',
+            '/kalender-proyek',
         ];
 
         foreach ($routes as $route) {

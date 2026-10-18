@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IssueController;
@@ -42,6 +43,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::post('/projects/{project}/members', [ProjectController::class, 'addMember'])->name('projects.members.add');
     Route::delete('/projects/{project}/members/{user}', [ProjectController::class, 'removeMember'])->name('projects.members.remove');
+
+    // Project Calendar (/kalender-proyek)
+    Route::get('/kalender-proyek', [CalendarController::class, 'index'])->name('calendar.index');
 
     // Project Settings Shortcut (/pengaturan)
     Route::get('/pengaturan', function () {
