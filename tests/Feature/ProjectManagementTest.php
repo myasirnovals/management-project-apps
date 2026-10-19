@@ -97,7 +97,7 @@ class ProjectManagementTest extends TestCase
         ]);
         $project = Project::where('key', 'ECOM')->first();
         $this->assertNotNull($project);
-        $response->assertRedirect("/projects/{$project->id}/board");
+        $response->assertRedirect(route('projects.board', $project));
 
         // 2. Add & Remove Member
         $this->actingAs($admin)->post("/projects/{$project->id}/members", [
@@ -207,7 +207,7 @@ class ProjectManagementTest extends TestCase
             'goal' => 'Pengujian transaksi lifecycle sprint',
             'duration_weeks' => 2,
         ]);
-        $createRes->assertRedirect("/projects/{$project->id}/backlog");
+        $createRes->assertRedirect(route('projects.backlog', $project));
         $sprint = $project->sprints()->where('name', 'PRK Sprint 99')->first();
         $this->assertNotNull($sprint);
         $this->assertEquals('planning', $sprint->status->value);
@@ -226,19 +226,19 @@ class ProjectManagementTest extends TestCase
             'start_date' => now()->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
         ]);
-        $startRes->assertRedirect("/projects/{$project->id}/board");
+        $startRes->assertRedirect(route('projects.board', $project));
         $this->assertEquals('active', $sprint->fresh()->status->value);
 
         // 3. Complete Sprint
         $compRes = $this->actingAs($admin)->post("/projects/{$project->id}/sprints/{$sprint->id}/complete", [
             'incomplete_action' => 'backlog',
         ]);
-        $compRes->assertRedirect("/projects/{$project->id}/backlog");
+        $compRes->assertRedirect(route('projects.backlog', $project));
         $this->assertEquals('completed', $sprint->fresh()->status->value);
 
         // 4. Delete Sprint
         $delRes = $this->actingAs($admin)->delete("/projects/{$project->id}/sprints/{$sprint->id}");
-        $delRes->assertRedirect("/projects/{$project->id}/backlog");
+        $delRes->assertRedirect(route('projects.backlog', $project));
         $this->assertDatabaseMissing('sprints', ['id' => $sprint->id]);
     }
 

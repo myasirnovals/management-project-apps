@@ -176,7 +176,7 @@
     <script>
         async function openKanbanIssueDetail(id) {
             const modal = document.getElementById('kanbanDetailModal');
-            const res = await fetch(`/projects/{{ $project->id }}/issues/${id}`, {
+            const res = await fetch(`/projects/{{ $project->code }}/issues/${id}`, {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
             });
             const data = await res.json();
@@ -189,7 +189,7 @@
             document.getElementById('kanban_priority').value = issue.priority;
             document.getElementById('kanban_type').value = issue.type;
             document.getElementById('kanban_assignee').value = issue.assignee_id || '';
-            document.getElementById('kanbanEditForm').action = `/projects/{{ $project->id }}/issues/${issue.id}`;
+            document.getElementById('kanbanEditForm').action = `/projects/{{ $project->code }}/issues/${issue.id}`;
 
             modal.classList.remove('hidden');
         }
@@ -214,7 +214,7 @@
 
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             try {
-                const res = await fetch(`/projects/{{ $project->id }}/board/status`, {
+                const res = await fetch(`/projects/{{ $project->code }}/board/status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

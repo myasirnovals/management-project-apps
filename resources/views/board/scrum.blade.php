@@ -405,7 +405,7 @@
             const modal = document.getElementById('issueDetailModal');
             
             try {
-                const response = await fetch(`/projects/{{ $project->id }}/issues/${issueId}`, {
+                const response = await fetch(`/projects/{{ $project->code }}/issues/${issueId}`, {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 const data = await response.json();
@@ -425,8 +425,8 @@
                 badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border ' + data.type_badge;
                 badge.innerText = issue.type;
 
-                document.getElementById('editIssueForm').action = `/projects/{{ $project->id }}/issues/${issue.id}`;
-                document.getElementById('createSubtaskForm').action = `/projects/{{ $project->id }}/issues/${issue.id}/subtasks`;
+                document.getElementById('editIssueForm').action = `/projects/{{ $project->code }}/issues/${issue.id}`;
+                document.getElementById('createSubtaskForm').action = `/projects/{{ $project->code }}/issues/${issue.id}/subtasks`;
 
                 // Render Subtasks
                 const subContainer = document.getElementById('subtasks_container');
@@ -465,7 +465,7 @@
 
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             try {
-                const res = await fetch(`/projects/{{ $project->id }}/issues/${currentOpenIssueId}`, {
+                const res = await fetch(`/projects/{{ $project->code }}/issues/${currentOpenIssueId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': token,
@@ -499,7 +499,7 @@
 
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             try {
-                const res = await fetch(`/projects/{{ $project->id }}/board/status`, {
+                const res = await fetch(`/projects/{{ $project->code }}/board/status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

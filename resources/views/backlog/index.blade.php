@@ -417,7 +417,7 @@
             const sprintId = el.dataset.sprintId;
             const name = el.dataset.sprintName;
             const goal = el.dataset.sprintGoal || '';
-            document.getElementById('startSprintForm').action = `/projects/{{ $project->id }}/sprints/${sprintId}/start`;
+            document.getElementById('startSprintForm').action = `/projects/{{ $project->code }}/sprints/${sprintId}/start`;
             document.getElementById('start_name').value = name;
             document.getElementById('start_goal').value = goal;
             document.getElementById('startSprintModal').classList.remove('hidden');
@@ -430,7 +430,7 @@
 
         async function moveSingleIssueToSprint(issueId, sprintId) {
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const res = await fetch(`/projects/{{ $project->id }}/backlog/move`, {
+            const res = await fetch(`/projects/{{ $project->code }}/backlog/move`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

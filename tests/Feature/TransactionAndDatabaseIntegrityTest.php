@@ -115,7 +115,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
             'incomplete_action' => 'backlog',
         ]);
 
-        $response->assertRedirect("/projects/{$project->id}/backlog");
+        $response->assertRedirect(route('projects.backlog', $project));
 
         // Verify atomic transaction results
         $this->assertEquals(SprintStatus::COMPLETED->value, $sprint->fresh()->status->value);
@@ -163,7 +163,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
             'incomplete_action' => (string) $nextSprint->id,
         ]);
 
-        $response->assertRedirect("/projects/{$project->id}/backlog");
+        $response->assertRedirect(route('projects.backlog', $project));
         $this->assertEquals(SprintStatus::COMPLETED->value, $currentSprint->fresh()->status->value);
         $this->assertEquals($nextSprint->id, $incompleteIssue->fresh()->sprint_id);
     }
@@ -385,13 +385,13 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
         $project = Project::where('key', 'PRK')->first();
 
         // 1. Visiting project board displays Waktu Proyek link targeting /projects/{project}/timeline-calendar
-        $boardResponse = $this->actingAs($pm)->get("/projects/{$project->id}/board");
+        $boardResponse = $this->actingAs($pm)->get("/projects/{$project->code}/board");
         $boardResponse->assertStatus(200);
-        $boardResponse->assertSee("/projects/{$project->id}/timeline-calendar");
+        $boardResponse->assertSee("/projects/{$project->code}/timeline-calendar");
         $boardResponse->assertSee('Waktu Proyek');
 
         // 2. Visiting project timeline renders successfully with project context
-        $timelineResponse = $this->actingAs($pm)->get("/projects/{$project->id}/timeline-calendar");
+        $timelineResponse = $this->actingAs($pm)->get("/projects/{$project->code}/timeline-calendar");
         $timelineResponse->assertStatus(200);
         $timelineResponse->assertSee($project->key);
         $timelineResponse->assertSee($project->name);
@@ -401,6 +401,6 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
         // 3. Global workspace navigation (like /dashboard) does NOT show project-level timeline
         $dashResponse = $this->actingAs($pm)->get('/dashboard');
         $dashResponse->assertStatus(200);
-        $dashResponse->assertDontSee("/projects/{$project->id}/timeline-calendar");
+        $dashResponse->assertDontSee("/projects/{$project->code}/timeline-calendar");
     }
 }

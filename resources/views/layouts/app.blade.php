@@ -43,7 +43,7 @@
 
         <!-- Project Selector / Context -->
         @php
-            $currentProject = isset($project) ? $project : (request()->route('project') instanceof \App\Models\Project ? request()->route('project') : (is_numeric(request()->route('project')) ? \App\Models\Project::find(request()->route('project')) : null));
+            $currentProject = isset($project) ? $project : (request()->route('project') instanceof \App\Models\Project ? request()->route('project') : (is_string(request()->route('project')) ? \App\Models\Project::where('code', request()->route('project'))->orWhere('id', is_numeric(request()->route('project')) ? request()->route('project') : 0)->first() : null));
             $allProjectsList = \App\Models\Project::orderBy('name')->get();
         @endphp
 

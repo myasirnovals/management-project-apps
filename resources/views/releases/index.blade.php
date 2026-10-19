@@ -190,7 +190,7 @@
             const versionName = el.dataset.versionName;
             document.getElementById('release_title').innerText = `Konfirmasi Rilis ${versionName}`;
             document.getElementById('release_desc').innerText = `Memulai tahap deployment untuk ${versionName}.`;
-            document.getElementById('releaseForm').action = `/projects/{{ $project->id }}/releases/${versionId}/release`;
+            document.getElementById('releaseForm').action = `/projects/{{ $project->code }}/releases/${versionId}/release`;
             document.getElementById('releaseScopeModal').classList.remove('hidden');
         }
         function closeReleaseModal() { document.getElementById('releaseScopeModal').classList.add('hidden'); }

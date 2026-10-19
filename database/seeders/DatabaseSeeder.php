@@ -79,6 +79,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'scrum',
                 'owner_id' => $pm->id,
                 'status' => 'active',
+                'code' => 'pjt-098342',
             ]
         );
 
