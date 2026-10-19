@@ -19,9 +19,24 @@
         </a>
     </x-slot>
 
+    <style>
+        @media (min-width: 768px) {
+            .timeline-metrics-grid {
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 1rem !important;
+            }
+            .timeline-breakdown-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 1.5rem !important;
+            }
+        }
+    </style>
+
     <div class="space-y-6 w-full max-w-[1600px] mx-auto">
         <!-- 3 Milestone & Timeline Quick Metric Cards (3 Kolom x 1 Baris) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 timeline-metrics-grid">
             <!-- Active Sprint Card -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex items-center justify-between">
                 <div>
@@ -120,7 +135,7 @@
         </div>
 
         <!-- BREAKDOWN SECTION: SPRINT MILESTONES & ISSUE DEADLINES (2 Kolom x 1 Baris) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 timeline-breakdown-grid">
             <!-- SPRINT MILESTONES CARD -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-800">
