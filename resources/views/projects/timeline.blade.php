@@ -119,8 +119,8 @@
             </div>
         </div>
 
-        <!-- BREAKDOWN SECTION: SPRINT MILESTONES & ISSUE DEADLINES -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- BREAKDOWN SECTION: SPRINT MILESTONES & ISSUE DEADLINES (2 Kolom x 1 Baris) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- SPRINT MILESTONES CARD -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-800">
