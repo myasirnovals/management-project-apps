@@ -1,34 +1,31 @@
 <x-app-layout :project="$project">
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
-            <div class="flex items-center gap-3">
-                <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
-                    {{ $project->key }}
+        <div class="flex items-center gap-3">
+            <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
+                {{ $project->key }}
+            </span>
+            <span class="text-sm font-bold text-white">{{ $currentSprint ? $currentSprint->name : 'Sprint Board (Backlog View)' }}</span>
+            @if($currentSprint && $currentSprint->status->value === 'active')
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    Aktif
                 </span>
-                <span class="text-sm font-bold text-white">{{ $currentSprint ? $currentSprint->name : 'Sprint Board (Backlog View)' }}</span>
-                @if($currentSprint && $currentSprint->status->value === 'active')
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        Aktif
+                @if($currentSprint->end_date)
+                    <span class="text-[11px] text-slate-400">
+                        • Berakhir: {{ \Carbon\Carbon::parse($currentSprint->end_date)->diffForHumans() }}
                     </span>
-                    @if($currentSprint->end_date)
-                        <span class="text-[11px] text-slate-400">
-                            • Berakhir: {{ \Carbon\Carbon::parse($currentSprint->end_date)->diffForHumans() }}
-                        </span>
-                    @endif
                 @endif
-            </div>
-
-            <!-- Complete Sprint Action / Switch Sprint -->
-            <div class="flex items-center gap-2">
-                @if($currentSprint && $currentSprint->status->value === 'active' && Auth::user()->isProjectManager())
-                    <button type="button" onclick="openCompleteSprintModal()"
-                        class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition">
-                        Selesaikan Sprint &rarr;
-                    </button>
-                @endif
-            </div>
+            @endif
         </div>
     </x-slot>
+
+    @if($currentSprint && $currentSprint->status->value === 'active' && Auth::user()->isProjectManager())
+        <x-slot name="headerActions">
+            <button type="button" onclick="openCompleteSprintModal()"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition">
+                Selesaikan Sprint &rarr;
+            </button>
+        </x-slot>
+    @endif
 
     <div class="space-y-4 max-w-full">
         <!-- Filter & Control Toolbar (Modul IV.D Quick Filters & Swimlanes) -->

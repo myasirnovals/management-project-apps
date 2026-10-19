@@ -1,20 +1,21 @@
 <x-app-layout :project="$project">
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-3">
-                <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
-                    {{ $project->key }}
-                </span>
-                <span class="text-sm font-bold text-white">Komponen Proyek (Modul I.F)</span>
-            </div>
-            <button type="button" onclick="openCreateComponentModal()"
-                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>+ Buat Komponen</span>
-            </button>
+        <div class="flex items-center gap-3">
+            <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
+                {{ $project->key }}
+            </span>
+            <span class="text-sm font-bold text-white">Komponen Proyek (Modul I.F)</span>
         </div>
+    </x-slot>
+
+    <x-slot name="headerActions">
+        <button type="button" onclick="openCreateComponentModal()"
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>+ Buat Komponen</span>
+        </button>
     </x-slot>
 
     <div class="space-y-6 max-w-6xl mx-auto">

@@ -1,18 +1,17 @@
 <x-app-layout :project="$project">
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-3">
-                <span class="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 text-xs">
-                    {{ $project->key }}
-                </span>
-                <span class="text-sm font-bold text-white">Kanban Board</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('projects.backlog', $project) }}" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition">
-                    Buka Backlog
-                </a>
-            </div>
+        <div class="flex items-center gap-3">
+            <span class="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 text-xs">
+                {{ $project->key }}
+            </span>
+            <span class="text-sm font-bold text-white">Kanban Board</span>
         </div>
+    </x-slot>
+
+    <x-slot name="headerActions">
+        <a href="{{ route('projects.backlog', $project) }}" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white transition">
+            Buka Backlog
+        </a>
     </x-slot>
 
     <div class="space-y-4 max-w-full">

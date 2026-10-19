@@ -1,25 +1,25 @@
 <x-app-layout :project="$project">
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('projects.reports.index', $project) }}" class="text-slate-400 hover:text-white">&larr; Semua Laporan</a>
-                <span class="text-slate-600">/</span>
-                <span class="text-sm font-bold text-white">Burn Up Report (Modul VII.B.a)</span>
-            </div>
-
-            @if($sprints->isNotEmpty())
-                <form method="GET" action="{{ route('projects.reports.burnup', $project) }}">
-                    <select name="sprint_id" onchange="this.form.submit()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white">
-                        @foreach($sprints as $sp)
-                            <option value="{{ $sp->id }}" {{ $sprint && $sprint->id === $sp->id ? 'selected' : '' }}>
-                                {{ $sp->name }} ({{ $sp->status->label() }})
-                            </option>
-                        @endforeach
-                    </select>
-                </form>
-            @endif
+        <div class="flex items-center gap-3">
+            <a href="{{ route('projects.reports.index', $project) }}" class="text-slate-400 hover:text-white">&larr; Semua Laporan</a>
+            <span class="text-slate-600">/</span>
+            <span class="text-sm font-bold text-white">Burn Up Report (Modul VII.B.a)</span>
         </div>
     </x-slot>
+
+    @if($sprints->isNotEmpty())
+        <x-slot name="headerActions">
+            <form method="GET" action="{{ route('projects.reports.burnup', $project) }}">
+                <select name="sprint_id" onchange="this.form.submit()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white">
+                    @foreach($sprints as $sp)
+                        <option value="{{ $sp->id }}" {{ $sprint && $sprint->id === $sp->id ? 'selected' : '' }}>
+                            {{ $sp->name }} ({{ $sp->status->label() }})
+                        </option>
+                    @endforeach
+                </select>
+            </form>
+        </x-slot>
+    @endif
 
     <div class="space-y-6 max-w-6xl mx-auto">
         <!-- Summary Cards -->
