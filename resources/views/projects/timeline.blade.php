@@ -1,81 +1,26 @@
 <x-app-layout :project="$project">
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-3">
-                <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
-                    {{ $project->key }}
-                </span>
-                <span class="text-sm font-bold text-white">Waktu Proyek (Timeline &amp; Kalender)</span>
-                @if($activeSprint)
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        Sprint Aktif: {{ $activeSprint->name }}
-                    </span>
-                @endif
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('projects.board', $project) }}" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition">
-                    Buka Board
-                </a>
-            </div>
+        <div class="flex items-center gap-3">
+            <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
+                {{ $project->key }}
+            </span>
+            <span class="text-sm font-bold text-white">Waktu Proyek</span>
         </div>
     </x-slot>
 
+    <x-slot name="headerActions">
+        <a href="{{ $createEventUrl }}" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition"
+            title="Buat Jadwal Proyek di Google Calendar">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Buat Jadwal</span>
+        </a>
+    </x-slot>
+
     <div class="space-y-6 w-full max-w-[1600px] mx-auto">
-        <!-- Top Toolbar: Role Badge, Action Buttons, and Quick Controls -->
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <!-- Left: Title & Role Information -->
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/25 shrink-0">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <h2 class="text-base font-bold text-white tracking-tight">Waktu &amp; Jadwal: {{ $project->name }}</h2>
-                            <span class="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                {{ $project->key }}
-                            </span>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-0.5">
-                            Kalender dan timeline kegiatan yang terfokus khusus untuk proyek <strong>{{ $project->name }}</strong>.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Right: Action Buttons -->
-                <div class="flex items-center gap-2.5 flex-wrap">
-                    <!-- Guide Modal Button -->
-                    <button type="button" onclick="openModal('guideModal')" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white border border-slate-700/60 transition shadow-sm">
-                        <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span>Panduan Hak Akses</span>
-                    </button>
-
-                    <!-- Open in Google Calendar -->
-                    <a href="{{ $openCalendarUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white border border-slate-700/60 transition shadow-sm" title="Buka langsung di aplikasi Google Calendar Anda">
-                        <svg class="w-4 h-4 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"></path>
-                        </svg>
-                        <span>Buka di Google Calendar</span>
-                    </a>
-
-                    @if($isProjectManager)
-                    <!-- PM Only: Add Event in Google Calendar with prefilled project tag -->
-                    <a href="{{ $createEventUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span>+ Buat Jadwal Proyek</span>
-                    </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- 3 Milestone & Timeline Quick Metric Cards -->
+        <!-- 3 Milestone & Timeline Quick Metric Cards (3 Kolom x 1 Baris) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Active Sprint Card -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex items-center justify-between">

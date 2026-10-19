@@ -395,7 +395,8 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
         $timelineResponse->assertStatus(200);
         $timelineResponse->assertSee($project->key);
         $timelineResponse->assertSee($project->name);
-        $timelineResponse->assertSee('Waktu Proyek (Timeline &amp; Kalender)', false);
+        $timelineResponse->assertSee('Waktu Proyek');
+        $timelineResponse->assertSee('Buat Jadwal');
         $timelineResponse->assertSee('Google Calendar Live View');
 
         // 3. Global workspace navigation (like /dashboard) does NOT show project-level timeline
