@@ -14,7 +14,7 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
             </svg>
-            <span>+ Buat Versi Rilis</span>
+            <span>Buat Versi Rilis</span>
         </button>
     </x-slot>
 
@@ -26,92 +26,92 @@
 
         <div class="space-y-6">
             @forelse($versions as $v)
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-                        <div>
-                            <div class="flex items-center gap-2.5">
-                                <span class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center font-bold text-xs">
-                                    🚀
-                                </span>
-                                <h3 class="text-base font-bold text-white">{{ $v->name }}</h3>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $v->status->badgeClasses() }}">
-                                    {{ $v->status->label() }}
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-1">
-                                {{ $v->description ?: 'Tidak ada deskripsi rilis.' }}
-                            </p>
-                        </div>
-
-                        <!-- Action: Release or Delete -->
-                        <div class="flex items-center gap-2">
-                            @if($v->status->value === 'unreleased')
-                                <button type="button"
-                                    data-version-id="{{ $v->id }}"
-                                    data-version-name="{{ $v->name }}"
-                                    onclick="openReleaseModal(this)"
-                                    class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition">
-                                    Rilis Versi Ini (Release) &rarr;
-                                </button>
-                            @else
-                                <span class="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
-                                    ✓ Dirilis pada {{ $v->release_date ? $v->release_date->format('d M Y') : '-' }}
-                                </span>
-                            @endif
-
-                            <form method="POST" action="{{ route('projects.releases.destroy', [$project, $v]) }}" onsubmit="return confirm('Hapus versi rilis ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="p-2 text-slate-500 hover:text-rose-400 transition" title="Hapus Versi">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Progress Statistics Bar (Modul V Gambar 5.14) -->
-                    <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
-                        <div class="flex items-center justify-between text-xs mb-2">
-                            <span class="text-slate-400">Progres Kesiapan Rilis</span>
-                            <div class="flex items-center gap-3">
-                                <span class="text-emerald-400 font-bold">{{ $v->completed_issues_count }} Done</span>
-                                <span class="text-amber-400 font-bold">{{ $v->remaining_issues_count }} Remaining</span>
-                                <span class="text-white font-bold">({{ $v->progress_percentage }}%)</span>
-                            </div>
-                        </div>
-                        <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full" @style(["width: {$v->progress_percentage}%"])></div>
-                        </div>
-                    </div>
-
-                    <!-- Issues included in version -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Issue Terkait dalam Versi Ini:</h4>
-                        <div class="space-y-1.5">
-                            @forelse($v->issues as $issue)
-                                <div class="p-2.5 bg-slate-950/40 border border-slate-800/80 rounded-xl flex items-center justify-between text-xs">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-mono text-indigo-400 font-bold text-[11px]">{{ $issue->issue_key }}</span>
-                                        <span class="text-slate-200">{{ $issue->title }}</span>
-                                    </div>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold border {{ $issue->status->badgeClasses() }}">
-                                        {{ $issue->status->label() }}
-                                    </span>
-                                </div>
-                            @empty
-                                <div class="text-slate-500 text-xs italic py-2">
-                                    Belum ada issue yang dikaitkan dengan Fix Version ini. Anda dapat mengaitkannya saat membuat atau mengedit issue.
-                                </div>
-                            @endforelse
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center font-bold text-xs">
+                                🚀
+                            </span>
+                            <h3 class="text-base font-bold text-white">{{ $v->name }}</h3>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $v->status->badgeClasses() }}">
+                                {{ $v->status->label() }}
+                            </span>
                         </div>
+                        <p class="text-xs text-slate-400 mt-1">
+                            {{ $v->description ?: 'Tidak ada deskripsi rilis.' }}
+                        </p>
+                    </div>
+
+                    <!-- Action: Release or Delete -->
+                    <div class="flex items-center gap-2">
+                        @if($v->status->value === 'unreleased')
+                        <button type="button"
+                            data-version-id="{{ $v->id }}"
+                            data-version-name="{{ $v->name }}"
+                            onclick="openReleaseModal(this)"
+                            class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition">
+                            Rilis Versi Ini (Release) &rarr;
+                        </button>
+                        @else
+                        <span class="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
+                            ✓ Dirilis pada {{ $v->release_date ? $v->release_date->format('d M Y') : '-' }}
+                        </span>
+                        @endif
+
+                        <form method="POST" action="{{ route('projects.releases.destroy', [$project, $v]) }}" onsubmit="return confirm('Hapus versi rilis ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="p-2 text-slate-500 hover:text-rose-400 transition" title="Hapus Versi">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </form>
                     </div>
                 </div>
-            @empty
-                <div class="text-center py-12 bg-slate-900 border border-slate-800 rounded-3xl text-slate-500 text-xs">
-                    Belum ada versi rilis yang dibuat. Tekan tombol "+ Buat Versi Rilis" di kanan atas.
+
+                <!-- Progress Statistics Bar (Modul V Gambar 5.14) -->
+                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                    <div class="flex items-center justify-between text-xs mb-2">
+                        <span class="text-slate-400">Progres Kesiapan Rilis</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-emerald-400 font-bold">{{ $v->completed_issues_count }} Done</span>
+                            <span class="text-amber-400 font-bold">{{ $v->remaining_issues_count }} Remaining</span>
+                            <span class="text-white font-bold">({{ $v->progress_percentage }}%)</span>
+                        </div>
+                    </div>
+                    <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full" @style(["width: {$v->progress_percentage}%"])></div>
+                    </div>
                 </div>
+
+                <!-- Issues included in version -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Issue Terkait dalam Versi Ini:</h4>
+                    <div class="space-y-1.5">
+                        @forelse($v->issues as $issue)
+                        <div class="p-2.5 bg-slate-950/40 border border-slate-800/80 rounded-xl flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-indigo-400 font-bold text-[11px]">{{ $issue->issue_key }}</span>
+                                <span class="text-slate-200">{{ $issue->title }}</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold border {{ $issue->status->badgeClasses() }}">
+                                {{ $issue->status->label() }}
+                            </span>
+                        </div>
+                        @empty
+                        <div class="text-slate-500 text-xs italic py-2">
+                            Belum ada issue yang dikaitkan dengan Fix Version ini. Anda dapat mengaitkannya saat membuat atau mengedit issue.
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="text-center py-12 bg-slate-900 border border-slate-800 rounded-3xl text-slate-500 text-xs">
+                Belum ada versi rilis yang dibuat. Tekan tombol "+ Buat Versi Rilis" di kanan atas.
+            </div>
             @endforelse
         </div>
     </div>
@@ -183,8 +183,13 @@
     </div>
 
     <script>
-        function openCreateVersionModal() { document.getElementById('createVersionModal').classList.remove('hidden'); }
-        function closeCreateVersionModal() { document.getElementById('createVersionModal').classList.add('hidden'); }
+        function openCreateVersionModal() {
+            document.getElementById('createVersionModal').classList.remove('hidden');
+        }
+
+        function closeCreateVersionModal() {
+            document.getElementById('createVersionModal').classList.add('hidden');
+        }
 
         function openReleaseModal(el) {
             const versionId = el.dataset.versionId;
@@ -194,6 +199,9 @@
             document.getElementById('releaseForm').action = `/projects/{{ $project->code }}/releases/${versionId}/release`;
             document.getElementById('releaseScopeModal').classList.remove('hidden');
         }
-        function closeReleaseModal() { document.getElementById('releaseScopeModal').classList.add('hidden'); }
+
+        function closeReleaseModal() {
+            document.getElementById('releaseScopeModal').classList.add('hidden');
+        }
     </script>
 </x-app-layout>

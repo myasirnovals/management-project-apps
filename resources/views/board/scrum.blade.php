@@ -6,25 +6,25 @@
             </span>
             <span class="text-sm font-bold text-white">{{ $currentSprint ? $currentSprint->name : 'Sprint Board (Backlog View)' }}</span>
             @if($currentSprint && $currentSprint->status->value === 'active')
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Aktif
-                </span>
-                @if($currentSprint->end_date)
-                    <span class="text-[11px] text-slate-400">
-                        • Berakhir: {{ \Carbon\Carbon::parse($currentSprint->end_date)->diffForHumans() }}
-                    </span>
-                @endif
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Aktif
+            </span>
+            @if($currentSprint->end_date)
+            <span class="text-[11px] text-slate-400">
+                • Berakhir: {{ \Carbon\Carbon::parse($currentSprint->end_date)->diffForHumans() }}
+            </span>
+            @endif
             @endif
         </div>
     </x-slot>
 
     @if($currentSprint && $currentSprint->status->value === 'active' && Auth::user()->isProjectManager())
-        <x-slot name="headerActions">
-            <button type="button" onclick="openCompleteSprintModal()"
-                class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition">
-                Selesaikan Sprint &rarr;
-            </button>
-        </x-slot>
+    <x-slot name="headerActions">
+        <button type="button" onclick="openCompleteSprintModal()"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition">
+            Selesaikan Sprint
+        </button>
+    </x-slot>
     @endif
 
     <div class="space-y-4 max-w-full">
@@ -82,146 +82,146 @@
 
                 <!-- Sprint Selector -->
                 @if($allSprints->count() > 1)
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-slate-400 font-semibold">Sprint:</span>
-                        <select onchange="window.location.href = this.value" class="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none">
-                            @foreach($allSprints as $sp)
-                                <option value="{{ route('projects.board', [$project, 'sprint_id' => $sp->id, 'swimlane' => $swimlaneMode, 'filter' => $quickFilter]) }}"
-                                    {{ $currentSprint && $currentSprint->id === $sp->id ? 'selected' : '' }}>
-                                    {{ $sp->name }} ({{ $sp->status->label() }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-slate-400 font-semibold">Sprint:</span>
+                    <select onchange="window.location.href = this.value" class="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none">
+                        @foreach($allSprints as $sp)
+                        <option value="{{ route('projects.board', [$project, 'sprint_id' => $sp->id, 'swimlane' => $swimlaneMode, 'filter' => $quickFilter]) }}"
+                            {{ $currentSprint && $currentSprint->id === $sp->id ? 'selected' : '' }}>
+                            {{ $sp->name }} ({{ $sp->status->label() }})
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
                 @endif
             </div>
         </div>
 
         @if(!$currentSprint)
-            <div class="bg-indigo-950/20 border border-indigo-500/20 rounded-2xl p-5 text-center">
-                <h4 class="text-sm font-bold text-indigo-300">Belum Ada Sprint Aktif</h4>
-                <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-                    Untuk mulai menggunakan papan aktif Scrum, buat sprint baru dan masukkan issue dari halaman Backlog, kemudian klik "Mulai Sprint".
-                </p>
-                <a href="{{ route('projects.backlog', $project) }}" class="inline-block mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition">
-                    Ke Halaman Backlog &rarr;
-                </a>
-            </div>
+        <div class="bg-indigo-950/20 border border-indigo-500/20 rounded-2xl p-5 text-center">
+            <h4 class="text-sm font-bold text-indigo-300">Belum Ada Sprint Aktif</h4>
+            <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                Untuk mulai menggunakan papan aktif Scrum, buat sprint baru dan masukkan issue dari halaman Backlog, kemudian klik "Mulai Sprint".
+            </p>
+            <a href="{{ route('projects.backlog', $project) }}" class="inline-block mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition">
+                Ke Halaman Backlog &rarr;
+            </a>
+        </div>
         @endif
 
         <!-- Scrum Board Grid (4 Columns) -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
             @foreach($columns as $colKey => $col)
-                @php
-                    $colIssuesCount = $col['issues']->count();
-                    $isOverLimit = $col['max'] && $colIssuesCount > $col['max'];
-                @endphp
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col min-h-[500px]">
-                    <!-- Column Header with Constraints (Modul IV.B Gambar 4.18) -->
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full {{ $colKey === 'to_do' ? 'bg-slate-400' : ($colKey === 'in_progress' ? 'bg-blue-400' : ($colKey === 'in_review' ? 'bg-amber-400' : 'bg-emerald-400')) }}"></span>
-                            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-200">{{ $col['title'] }}</h3>
-                        </div>
-
-                        <!-- WIP Constraints Badge -->
-                        <div class="flex items-center gap-1.5">
-                            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold {{ $isOverLimit ? 'bg-rose-500 text-white' : 'bg-slate-800 text-slate-300' }}">
-                                {{ $colIssuesCount }}
-                                @if($col['max'])
-                                    / <span class="text-slate-400">{{ $col['max'] }}</span>
-                                @endif
-                            </span>
-                        </div>
+            @php
+            $colIssuesCount = $col['issues']->count();
+            $isOverLimit = $col['max'] && $colIssuesCount > $col['max'];
+            @endphp
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col min-h-[500px]">
+                <!-- Column Header with Constraints (Modul IV.B Gambar 4.18) -->
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full {{ $colKey === 'to_do' ? 'bg-slate-400' : ($colKey === 'in_progress' ? 'bg-blue-400' : ($colKey === 'in_review' ? 'bg-amber-400' : 'bg-emerald-400')) }}"></span>
+                        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-200">{{ $col['title'] }}</h3>
                     </div>
 
-                    <!-- Column Cards Container -->
-                    <div class="space-y-3 flex-1 overflow-y-auto"
-                        data-status="{{ $col['status']->value }}"
-                        ondragover="handleDragOver(event)"
-                        ondrop="handleDrop(event, this)">
-                        @forelse($col['issues'] as $issue)
-                            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition cursor-pointer group"
-                                draggable="true"
-                                ondragstart="handleDragStart(event, this)"
-                                data-issue-id="{{ $issue->id }}"
-                                onclick="openIssueDetailModal(this.dataset.issueId)">
-                                
-                                <!-- Card Header: Key & Priority -->
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold border {{ $issue->type->badgeClasses() }}">
-                                            {{ $issue->type->label() }}
-                                        </span>
-                                        <span class="font-mono text-xs font-bold text-slate-400 group-hover:text-indigo-400 transition">
-                                            {{ $issue->issue_key }}
-                                        </span>
-                                    </div>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $issue->priority->badgeClasses() }}">
-                                        {{ $issue->priority->label() }}
-                                    </span>
-                                </div>
-
-                                <!-- Card Title -->
-                                <h4 class="text-xs font-semibold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-white transition">
-                                    {{ $issue->title }}
-                                </h4>
-
-                                <!-- Card Meta: Component & Epic -->
-                                <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                                    @if($issue->component)
-                                        <span class="px-2 py-0.2 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
-                                            {{ $issue->component->name }}
-                                        </span>
-                                    @endif
-                                    @if($issue->parent && $issue->parent->type->value === 'epic')
-                                        <span class="px-2 py-0.2 rounded text-[10px] bg-purple-950 text-purple-300 border border-purple-800">
-                                            ⚡ {{ $issue->parent->title }}
-                                        </span>
-                                    @endif
-                                </div>
-
-                                <!-- Card Footer: Quick Move Dropdown & Assignee -->
-                                <div class="flex items-center justify-between pt-2 border-t border-slate-800/60" onclick="event.stopPropagation()">
-                                    <!-- Quick Move Select -->
-                                    <form method="POST" action="{{ route('projects.board.status', $project) }}" class="inline">
-                                        @csrf
-                                        <input type="hidden" name="issue_id" value="{{ $issue->id }}">
-                                        <select name="status" onchange="this.form.submit()"
-                                            class="bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-300 focus:outline-none hover:border-indigo-500">
-                                            <option value="to_do" {{ $issue->status->value === 'to_do' ? 'selected' : '' }}>To Do</option>
-                                            <option value="in_progress" {{ $issue->status->value === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                            <option value="in_review" {{ $issue->status->value === 'in_review' ? 'selected' : '' }}>In Review</option>
-                                            <option value="done" {{ $issue->status->value === 'done' ? 'selected' : '' }}>Done</option>
-                                        </select>
-                                    </form>
-
-                                    <!-- Story Points & Assignee Avatar -->
-                                    <div class="flex items-center gap-2">
-                                        @if($issue->story_points !== null)
-                                            <span class="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold flex items-center justify-center" title="Story Points">
-                                                {{ $issue->story_points }}
-                                            </span>
-                                        @endif
-                                        @if($issue->assignee)
-                                            <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-1 ring-slate-700" title="{{ $issue->assignee->name }}">
-                                                {{ $issue->assignee->initials() }}
-                                            </div>
-                                        @else
-                                            <div class="w-6 h-6 rounded-full bg-slate-800 border border-dashed border-slate-700 text-slate-500 text-[10px] flex items-center justify-center" title="Unassigned">
-                                                ?
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="h-32 border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-600 text-xs">
-                                Tidak ada kartu
-                            </div>
-                        @endforelse
+                    <!-- WIP Constraints Badge -->
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold {{ $isOverLimit ? 'bg-rose-500 text-white' : 'bg-slate-800 text-slate-300' }}">
+                            {{ $colIssuesCount }}
+                            @if($col['max'])
+                            / <span class="text-slate-400">{{ $col['max'] }}</span>
+                            @endif
+                        </span>
                     </div>
                 </div>
+
+                <!-- Column Cards Container -->
+                <div class="space-y-3 flex-1 overflow-y-auto"
+                    data-status="{{ $col['status']->value }}"
+                    ondragover="handleDragOver(event)"
+                    ondrop="handleDrop(event, this)">
+                    @forelse($col['issues'] as $issue)
+                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition cursor-pointer group"
+                        draggable="true"
+                        ondragstart="handleDragStart(event, this)"
+                        data-issue-id="{{ $issue->id }}"
+                        onclick="openIssueDetailModal(this.dataset.issueId)">
+
+                        <!-- Card Header: Key & Priority -->
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border {{ $issue->type->badgeClasses() }}">
+                                    {{ $issue->type->label() }}
+                                </span>
+                                <span class="font-mono text-xs font-bold text-slate-400 group-hover:text-indigo-400 transition">
+                                    {{ $issue->issue_key }}
+                                </span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $issue->priority->badgeClasses() }}">
+                                {{ $issue->priority->label() }}
+                            </span>
+                        </div>
+
+                        <!-- Card Title -->
+                        <h4 class="text-xs font-semibold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-white transition">
+                            {{ $issue->title }}
+                        </h4>
+
+                        <!-- Card Meta: Component & Epic -->
+                        <div class="flex flex-wrap items-center gap-1.5 mb-3">
+                            @if($issue->component)
+                            <span class="px-2 py-0.2 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
+                                {{ $issue->component->name }}
+                            </span>
+                            @endif
+                            @if($issue->parent && $issue->parent->type->value === 'epic')
+                            <span class="px-2 py-0.2 rounded text-[10px] bg-purple-950 text-purple-300 border border-purple-800">
+                                ⚡ {{ $issue->parent->title }}
+                            </span>
+                            @endif
+                        </div>
+
+                        <!-- Card Footer: Quick Move Dropdown & Assignee -->
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-800/60" onclick="event.stopPropagation()">
+                            <!-- Quick Move Select -->
+                            <form method="POST" action="{{ route('projects.board.status', $project) }}" class="inline">
+                                @csrf
+                                <input type="hidden" name="issue_id" value="{{ $issue->id }}">
+                                <select name="status" onchange="this.form.submit()"
+                                    class="bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-300 focus:outline-none hover:border-indigo-500">
+                                    <option value="to_do" {{ $issue->status->value === 'to_do' ? 'selected' : '' }}>To Do</option>
+                                    <option value="in_progress" {{ $issue->status->value === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                    <option value="in_review" {{ $issue->status->value === 'in_review' ? 'selected' : '' }}>In Review</option>
+                                    <option value="done" {{ $issue->status->value === 'done' ? 'selected' : '' }}>Done</option>
+                                </select>
+                            </form>
+
+                            <!-- Story Points & Assignee Avatar -->
+                            <div class="flex items-center gap-2">
+                                @if($issue->story_points !== null)
+                                <span class="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold flex items-center justify-center" title="Story Points">
+                                    {{ $issue->story_points }}
+                                </span>
+                                @endif
+                                @if($issue->assignee)
+                                <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-1 ring-slate-700" title="{{ $issue->assignee->name }}">
+                                    {{ $issue->assignee->initials() }}
+                                </div>
+                                @else
+                                <div class="w-6 h-6 rounded-full bg-slate-800 border border-dashed border-slate-700 text-slate-500 text-[10px] flex items-center justify-center" title="Unassigned">
+                                    ?
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="h-32 border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-600 text-xs">
+                        Tidak ada kartu
+                    </div>
+                    @endforelse
+                </div>
+            </div>
             @endforeach
         </div>
     </div>
@@ -242,7 +242,7 @@
                     <select name="incomplete_action" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
                         <option value="backlog">Backlog Proyek</option>
                         @foreach($project->sprints->where('status', \App\Enums\SprintStatus::PLANNING) as $planSprint)
-                            <option value="{{ $planSprint->id }}">{{ $planSprint->name }}</option>
+                        <option value="{{ $planSprint->id }}">{{ $planSprint->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -336,7 +336,7 @@
                             <select id="detail_assignee_id" name="assignee_id" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                                 <option value="">-- Unassigned --</option>
                                 @foreach($users as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -347,7 +347,7 @@
                             <select id="detail_component_id" name="component_id" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                                 <option value="">-- Tidak ada --</option>
                                 @foreach($project->components as $c)
-                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                <option value="{{ $c->id }}">{{ $c->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -368,7 +368,7 @@
                 <!-- Subtasks Section (Modul II.C Gambar 2.20 & 2.21) -->
                 <div class="mt-8 pt-6 border-t border-slate-800">
                     <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">Sub-tasks (Pekerjaan Turunan)</h4>
-                    
+
                     <div id="subtasks_container" class="space-y-2 mb-4">
                         <!-- Populated dynamically via JS -->
                     </div>
@@ -400,10 +400,13 @@
         async function openIssueDetailModal(issueId) {
             currentOpenIssueId = issueId;
             const modal = document.getElementById('issueDetailModal');
-            
+
             try {
                 const response = await fetch(`/projects/{{ $project->code }}/issues/${issueId}`, {
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
                 const data = await response.json();
                 const issue = data.issue;
@@ -504,7 +507,10 @@
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify({ issue_id: issueId, status: targetStatus })
+                    body: JSON.stringify({
+                        issue_id: issueId,
+                        status: targetStatus
+                    })
                 });
                 if (res.ok) {
                     window.location.reload();
