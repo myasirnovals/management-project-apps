@@ -5,7 +5,7 @@
                 <span class="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 text-xs">
                     {{ $project->key }}
                 </span>
-                <span class="text-sm font-bold text-white">Kanban Board (Continuous Delivery Flow)</span>
+                <span class="text-sm font-bold text-white">Kanban Board</span>
             </div>
             <div class="flex items-center gap-2">
                 <a href="{{ route('projects.backlog', $project) }}" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition">
@@ -33,73 +33,73 @@
         <!-- 4 Columns Kanban Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
             @foreach($columns as $colKey => $col)
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col min-h-[500px]">
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full {{ $colKey === 'to_do' ? 'bg-slate-400' : ($colKey === 'in_progress' ? 'bg-blue-400' : ($colKey === 'in_review' ? 'bg-amber-400' : 'bg-emerald-400')) }}"></span>
-                            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-200">{{ $col['title'] }}</h3>
-                        </div>
-                        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300">
-                            {{ $col['issues']->count() }}
-                        </span>
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col min-h-[500px]">
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full {{ $colKey === 'to_do' ? 'bg-slate-400' : ($colKey === 'in_progress' ? 'bg-blue-400' : ($colKey === 'in_review' ? 'bg-amber-400' : 'bg-emerald-400')) }}"></span>
+                        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-200">{{ $col['title'] }}</h3>
                     </div>
-
-                    <div class="space-y-3 flex-1 overflow-y-auto"
-                        data-status="{{ $col['status']->value }}"
-                        ondragover="handleDragOver(event)"
-                        ondrop="handleDrop(event, this)">
-                        @forelse($col['issues'] as $issue)
-                            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition cursor-pointer group"
-                                draggable="true"
-                                ondragstart="handleDragStart(event, this)"
-                                data-issue-id="{{ $issue->id }}"
-                                onclick="openKanbanIssueDetail(this.dataset.issueId)">
-                                
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold border {{ $issue->type->badgeClasses() }}">
-                                            {{ $issue->type->label() }}
-                                        </span>
-                                        <span class="font-mono text-xs font-bold text-slate-400 group-hover:text-indigo-400 transition">
-                                            {{ $issue->issue_key }}
-                                        </span>
-                                    </div>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $issue->priority->badgeClasses() }}">
-                                        {{ $issue->priority->label() }}
-                                    </span>
-                                </div>
-
-                                <h4 class="text-xs font-semibold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-white transition">
-                                    {{ $issue->title }}
-                                </h4>
-
-                                <div class="flex items-center justify-between pt-2 border-t border-slate-800/60" onclick="event.stopPropagation()">
-                                    <form method="POST" action="{{ route('projects.board.status', $project) }}" class="inline">
-                                        @csrf
-                                        <input type="hidden" name="issue_id" value="{{ $issue->id }}">
-                                        <select name="status" onchange="this.form.submit()"
-                                            class="bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-300 focus:outline-none hover:border-indigo-500">
-                                            <option value="to_do" {{ $issue->status->value === 'to_do' ? 'selected' : '' }}>To Do</option>
-                                            <option value="in_progress" {{ $issue->status->value === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                            <option value="in_review" {{ $issue->status->value === 'in_review' ? 'selected' : '' }}>In Review</option>
-                                            <option value="done" {{ $issue->status->value === 'done' ? 'selected' : '' }}>Done</option>
-                                        </select>
-                                    </form>
-
-                                    @if($issue->assignee)
-                                        <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-1 ring-slate-700" title="{{ $issue->assignee->name }}">
-                                            {{ $issue->assignee->initials() }}
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @empty
-                            <div class="h-32 border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-600 text-xs">
-                                Tidak ada kartu
-                            </div>
-                        @endforelse
-                    </div>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300">
+                        {{ $col['issues']->count() }}
+                    </span>
                 </div>
+
+                <div class="space-y-3 flex-1 overflow-y-auto"
+                    data-status="{{ $col['status']->value }}"
+                    ondragover="handleDragOver(event)"
+                    ondrop="handleDrop(event, this)">
+                    @forelse($col['issues'] as $issue)
+                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition cursor-pointer group"
+                        draggable="true"
+                        ondragstart="handleDragStart(event, this)"
+                        data-issue-id="{{ $issue->id }}"
+                        onclick="openKanbanIssueDetail(this.dataset.issueId)">
+
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border {{ $issue->type->badgeClasses() }}">
+                                    {{ $issue->type->label() }}
+                                </span>
+                                <span class="font-mono text-xs font-bold text-slate-400 group-hover:text-indigo-400 transition">
+                                    {{ $issue->issue_key }}
+                                </span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $issue->priority->badgeClasses() }}">
+                                {{ $issue->priority->label() }}
+                            </span>
+                        </div>
+
+                        <h4 class="text-xs font-semibold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-white transition">
+                            {{ $issue->title }}
+                        </h4>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-800/60" onclick="event.stopPropagation()">
+                            <form method="POST" action="{{ route('projects.board.status', $project) }}" class="inline">
+                                @csrf
+                                <input type="hidden" name="issue_id" value="{{ $issue->id }}">
+                                <select name="status" onchange="this.form.submit()"
+                                    class="bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-300 focus:outline-none hover:border-indigo-500">
+                                    <option value="to_do" {{ $issue->status->value === 'to_do' ? 'selected' : '' }}>To Do</option>
+                                    <option value="in_progress" {{ $issue->status->value === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                    <option value="in_review" {{ $issue->status->value === 'in_review' ? 'selected' : '' }}>In Review</option>
+                                    <option value="done" {{ $issue->status->value === 'done' ? 'selected' : '' }}>Done</option>
+                                </select>
+                            </form>
+
+                            @if($issue->assignee)
+                            <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-1 ring-slate-700" title="{{ $issue->assignee->name }}">
+                                {{ $issue->assignee->initials() }}
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @empty
+                    <div class="h-32 border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-600 text-xs">
+                        Tidak ada kartu
+                    </div>
+                    @endforelse
+                </div>
+            </div>
             @endforeach
         </div>
     </div>
@@ -159,7 +159,7 @@
                             <select id="kanban_assignee" name="assignee_id" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white">
                                 <option value="">-- Unassigned --</option>
                                 @foreach($users as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -177,7 +177,10 @@
         async function openKanbanIssueDetail(id) {
             const modal = document.getElementById('kanbanDetailModal');
             const res = await fetch(`/projects/{{ $project->code }}/issues/${id}`, {
-                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             });
             const data = await res.json();
             const issue = data.issue;
@@ -222,7 +225,10 @@
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify({ issue_id: issueId, status: targetStatus })
+                    body: JSON.stringify({
+                        issue_id: issueId,
+                        status: targetStatus
+                    })
                 });
                 if (res.ok) {
                     window.location.reload();
