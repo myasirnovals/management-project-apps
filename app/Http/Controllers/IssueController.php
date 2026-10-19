@@ -77,11 +77,31 @@ class IssueController extends Controller
         $issue->load(['assignee', 'reporter', 'component', 'parent', 'version', 'sprint', 'subtasks.assignee']);
 
         if (request()->wantsJson() || request()->ajax()) {
+            $waService = app(\App\Services\WhatsAppService::class);
+            $hasAssigneeWa = (bool) ($issue->assignee && $issue->assignee->hasWhatsApp());
+
             return response()->json([
                 'issue' => $issue,
                 'type_badge' => $issue->type->badgeClasses(),
                 'status_badge' => $issue->status->badgeClasses(),
                 'priority_badge' => $issue->priority->badgeClasses(),
+                'whatsapp' => [
+                    'has_phone' => $hasAssigneeWa,
+                    'phone' => $issue->assignee?->phone,
+                    'assignee_name' => $issue->assignee?->name,
+                    'reminder_url' => $hasAssigneeWa ? $waService->generateWhatsAppUrl(
+                        $issue->assignee->phone,
+                        $waService->buildMessage($issue->assignee, $issue, 'reminder')
+                    ) : null,
+                    'overdue_url' => $hasAssigneeWa ? $waService->generateWhatsAppUrl(
+                        $issue->assignee->phone,
+                        $waService->buildMessage($issue->assignee, $issue, 'overdue')
+                    ) : null,
+                    'unresponsive_url' => $hasAssigneeWa ? $waService->generateWhatsAppUrl(
+                        $issue->assignee->phone,
+                        $waService->buildMessage($issue->assignee, $issue, 'unresponsive')
+                    ) : null,
+                ],
             ]);
         }
 

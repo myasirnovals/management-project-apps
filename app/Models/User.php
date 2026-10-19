@@ -23,6 +23,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'role',
         'job_title',
@@ -108,5 +109,33 @@ class User extends Authenticatable
             $initials .= strtoupper(substr($w, 0, 1));
         }
         return $initials ?: 'U';
+    }
+
+    /**
+     * Get standardized WhatsApp phone number.
+     */
+    public function formattedPhone(): ?string
+    {
+        return app(\App\Services\WhatsAppService::class)->formatPhoneNumber($this->phone);
+    }
+
+    /**
+     * Check if user has a valid WhatsApp phone number.
+     */
+    public function hasWhatsApp(): bool
+    {
+        return !empty($this->formattedPhone());
+    }
+
+    /**
+     * Generate direct WhatsApp link to this user.
+     */
+    public function whatsappUrl(string $message = ''): ?string
+    {
+        if (!$this->hasWhatsApp()) {
+            return null;
+        }
+
+        return app(\App\Services\WhatsAppService::class)->generateWhatsAppUrl($this->phone, $message);
     }
 }

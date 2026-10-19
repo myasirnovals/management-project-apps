@@ -204,6 +204,16 @@
                                 </span>
                                 @endif
                                 @if($issue->assignee)
+                                    @if($issue->assignee->hasWhatsApp())
+                                    <a href="{{ $issue->assignee->whatsappUrl(app(\App\Services\WhatsAppService::class)->buildMessage($issue->assignee, $issue, 'reminder')) }}"
+                                        target="_blank" onclick="event.stopPropagation()"
+                                        class="w-5 h-5 rounded-full bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white flex items-center justify-center transition border border-emerald-500/30"
+                                        title="Kirim Pengingat WhatsApp ke {{ $issue->assignee->name }}">
+                                        <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                                        </svg>
+                                    </a>
+                                    @endif
                                 <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-1 ring-slate-700" title="{{ $issue->assignee->name }}">
                                     {{ $issue->assignee->initials() }}
                                 </div>
@@ -265,7 +275,55 @@
                         <span id="detail_key" class="font-mono text-sm font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20"></span>
                         <span id="detail_type_badge" class="px-2 py-0.5 rounded text-[10px] font-bold border"></span>
                     </div>
-                    <button type="button" onclick="closeIssueDetailModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+
+                    <!-- Right: WhatsApp Actions & Close -->
+                    <div class="flex items-center gap-3">
+                        <div id="wa_action_group" class="hidden items-center gap-2">
+                            <div class="relative inline-block text-left" id="wa_dropdown_container">
+                                <button type="button" onclick="toggleWaDropdown(event)"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm shadow-emerald-600/30 transition">
+                                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                                    </svg>
+                                    <span>Colek via WA</span>
+                                    <svg class="w-3 h-3 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div id="wa_dropdown_menu" class="hidden absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-30 p-2 text-xs space-y-1">
+                                    <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                                        Hubungi <span id="wa_target_name" class="text-white"></span>
+                                    </div>
+                                    <a id="wa_link_reminder" href="#" target="_blank"
+                                        class="flex items-center gap-2 px-2.5 py-2 rounded-xl text-slate-200 hover:bg-emerald-500/10 hover:text-emerald-400 transition">
+                                        <span>⏰</span>
+                                        <div>
+                                            <div class="font-bold">Pengingat Jatuh Tempo</div>
+                                            <div class="text-[10px] text-slate-400">Tenggat waktu & update status</div>
+                                        </div>
+                                    </a>
+                                    <a id="wa_link_overdue" href="#" target="_blank"
+                                        class="flex items-center gap-2 px-2.5 py-2 rounded-xl text-slate-200 hover:bg-amber-500/10 hover:text-amber-400 transition">
+                                        <span>⚠️</span>
+                                        <div>
+                                            <div class="font-bold">Tanya Kendala / Tertunda</div>
+                                            <div class="text-[10px] text-slate-400">Kenapa belum dikerjakan</div>
+                                        </div>
+                                    </a>
+                                    <a id="wa_link_unresponsive" href="#" target="_blank"
+                                        class="flex items-center gap-2 px-2.5 py-2 rounded-xl text-slate-200 hover:bg-rose-500/10 hover:text-rose-400 transition">
+                                        <span>❓</span>
+                                        <div>
+                                            <div class="font-bold">Follow-up Respon Tim</div>
+                                            <div class="text-[10px] text-slate-400">Belum menjawab pesan/update</div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <span id="wa_no_phone_hint" class="hidden text-[11px] text-slate-500 italic">No WA belum diisi</span>
+                        <button type="button" onclick="closeIssueDetailModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+                    </div>
                 </div>
 
                 <form id="editIssueForm" method="POST" class="space-y-5">
@@ -448,12 +506,51 @@
                     subContainer.innerHTML = '<div class="text-slate-500 text-xs italic">Belum ada subtask untuk issue ini.</div>';
                 }
 
+                // WhatsApp actions setup
+                const waGroup = document.getElementById('wa_action_group');
+                const waHint = document.getElementById('wa_no_phone_hint');
+                const waMenu = document.getElementById('wa_dropdown_menu');
+                if (waMenu) waMenu.classList.add('hidden');
+
+                if (data.whatsapp && data.whatsapp.has_phone) {
+                    waGroup.classList.remove('hidden');
+                    waGroup.classList.add('flex');
+                    waHint.classList.add('hidden');
+
+                    document.getElementById('wa_target_name').innerText = data.whatsapp.assignee_name || 'Assignee';
+                    document.getElementById('wa_link_reminder').href = data.whatsapp.reminder_url;
+                    document.getElementById('wa_link_overdue').href = data.whatsapp.overdue_url;
+                    document.getElementById('wa_link_unresponsive').href = data.whatsapp.unresponsive_url;
+                } else {
+                    waGroup.classList.add('hidden');
+                    waGroup.classList.remove('flex');
+                    if (issue.assignee_id) {
+                        waHint.classList.remove('hidden');
+                    } else {
+                        waHint.classList.add('hidden');
+                    }
+                }
+
                 modal.classList.remove('hidden');
             } catch (err) {
                 console.error(err);
                 alert('Gagal mengambil detail issue.');
             }
         }
+
+        function toggleWaDropdown(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('wa_dropdown_menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('wa_dropdown_container');
+            const menu = document.getElementById('wa_dropdown_menu');
+            if (menu && !menu.classList.contains('hidden') && container && !container.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
 
         function closeIssueDetailModal() {
             document.getElementById('issueDetailModal').classList.add('hidden');

@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Devita Dwitama (Project Manager)',
                 'password' => Hash::make('password123'),
+                'phone' => '081234567890',
                 'role' => UserRole::PROJECT_MANAGER,
                 'job_title' => 'Project Manager & Scrum Master',
                 'is_active' => true,
@@ -42,6 +43,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Satriyo Ananda (Product Owner)',
                 'password' => Hash::make('password123'),
+                'phone' => '081234567891',
                 'role' => UserRole::PRODUCT_OWNER,
                 'job_title' => 'Product Owner',
                 'is_active' => true,
@@ -53,6 +55,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Yessi Sofia',
                 'password' => Hash::make('password123'),
+                'phone' => '081234567892',
                 'role' => UserRole::DEVELOPER,
                 'job_title' => 'Frontend Developer',
                 'is_active' => true,
@@ -64,6 +67,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Eprian Junan',
                 'password' => Hash::make('password123'),
+                'phone' => '081234567893',
                 'role' => UserRole::DEVELOPER,
                 'job_title' => 'Backend Developer',
                 'is_active' => true,

@@ -34,6 +34,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', Rule::enum(UserRole::class)],
             'job_title' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:6'],
@@ -42,6 +43,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
             'role' => $validated['role'],
             'job_title' => $validated['job_title'],
             'password' => Hash::make($validated['password']),
@@ -60,6 +62,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', Rule::enum(UserRole::class)],
             'job_title' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'min:6'],
@@ -69,6 +72,7 @@ class UserController extends Controller
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
             'role' => $validated['role'],
             'job_title' => $validated['job_title'],
             'is_active' => $validated['is_active'],

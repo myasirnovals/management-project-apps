@@ -48,6 +48,12 @@ class AppSettingsController extends Controller
             'mail_encryption' => ['nullable', 'in:tls,ssl,none'],
             'mail_from_address' => ['nullable', 'email', 'max:255'],
             'mail_from_name' => ['nullable', 'string', 'max:255'],
+
+            // WhatsApp Gateway
+            'whatsapp_gateway_enabled' => ['nullable', 'boolean'],
+            'whatsapp_gateway_provider' => ['nullable', 'string', 'in:fonnte,custom_webhook'],
+            'whatsapp_api_token' => ['nullable', 'string', 'max:255'],
+            'whatsapp_webhook_url' => ['nullable', 'url', 'max:1000'],
         ]);
 
         $settingsFile = storage_path('app/app_settings.json');
@@ -96,6 +102,12 @@ class AppSettingsController extends Controller
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@project.local',
             'mail_from_name' => 'AgilePM Notification',
+
+            // WhatsApp Gateway
+            'whatsapp_gateway_enabled' => false,
+            'whatsapp_gateway_provider' => 'fonnte',
+            'whatsapp_api_token' => '',
+            'whatsapp_webhook_url' => '',
         ];
 
         // Merge with existing calendar_settings.json if present
@@ -119,5 +131,21 @@ class AppSettingsController extends Controller
         }
 
         return $defaultSettings;
+    }
+
+    /**
+     * Manually trigger due date reminder job.
+     */
+    public function triggerReminders()
+    {
+        if (!auth()->check() || !auth()->user()->isProjectManager()) {
+            abort(403);
+        }
+
+        \Illuminate\Support\Facades\Artisan::call('reminders:send-due-dates');
+        $output = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        return redirect()->route('app.settings')
+            ->with('success', 'Pemeriksaan pengingat deadline berhasil dijalankan! ' . ($output ? "Hasil: {$output}" : ''));
     }
 }

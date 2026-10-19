@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     // Application Settings (/pengaturan-aplikasi)
     Route::get('/pengaturan-aplikasi', [AppSettingsController::class, 'index'])->name('app.settings');
     Route::post('/pengaturan-aplikasi', [AppSettingsController::class, 'update'])->name('app.settings.update');
+    Route::post('/pengaturan-aplikasi/trigger-reminders', [AppSettingsController::class, 'triggerReminders'])->name('app.settings.triggerReminders');
 
     // Project Settings Shortcut (/pengaturan)
     Route::get('/pengaturan', function () {
