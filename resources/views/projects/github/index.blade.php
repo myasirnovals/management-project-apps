@@ -50,14 +50,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
                         </a>
-                        <form method="POST" action="{{ route('projects.github.disconnect', $project) }}"
-                            onsubmit="return confirm('Apakah Anda yakin ingin memutuskan integrasi GitHub untuk proyek ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition">
-                                Putus Hubungan
-                            </button>
-                        </form>
+                        @if($isProjectManager ?? false)
+                            <form method="POST" action="{{ route('projects.github.disconnect', $project) }}"
+                                onsubmit="return confirm('Apakah Anda yakin ingin memutuskan integrasi GitHub untuk proyek ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition">
+                                    Putus Hubungan
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -67,77 +69,110 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <!-- Left Column: Configuration & Activity Stats -->
             <div class="space-y-6">
-                <!-- Configuration Card -->
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
-                    <div class="border-b border-slate-800 pb-4">
-                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                            <span>⚙️</span>
-                            <span>Konfigurasi Repositori & Otomatisasi</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-1">
-                            Tentukan repositori GitHub yang ditautkan ke proyek <span class="text-indigo-400 font-semibold">{{ $project->key }}</span>.
-                        </p>
-                    </div>
+                @if($isProjectManager ?? false)
+                    <!-- Configuration Card (Project Manager Only) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
+                        <div class="border-b border-slate-800 pb-4">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <span>⚙️</span>
+                                <span>Konfigurasi Repositori & Otomatisasi</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">
+                                Tentukan repositori GitHub yang ditautkan ke proyek <span class="text-indigo-400 font-semibold">{{ $project->key }}</span>.
+                            </p>
+                        </div>
 
-                    <form method="POST" action="{{ route('projects.github.update', $project) }}" class="space-y-4">
-                        @csrf
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                Nama Repositori GitHub *
-                            </label>
-                            <!-- Clean Input Group (Solves overlapping placeholder bug) -->
-                            <div class="flex rounded-xl overflow-hidden border border-slate-700 bg-slate-950 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition">
-                                <span class="inline-flex items-center px-3.5 bg-slate-900 text-slate-400 text-xs font-mono border-r border-slate-800 select-none">
-                                    github.com/
+                        <form method="POST" action="{{ route('projects.github.update', $project) }}" class="space-y-4">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Nama Repositori GitHub *
+                                </label>
+                                <!-- Clean Input Group (Solves overlapping placeholder bug) -->
+                                <div class="flex rounded-xl overflow-hidden border border-slate-700 bg-slate-950 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition">
+                                    <span class="inline-flex items-center px-3.5 bg-slate-900 text-slate-400 text-xs font-mono border-r border-slate-800 select-none">
+                                        github.com/
+                                    </span>
+                                    <input type="text" name="github_repo"
+                                        value="{{ old('github_repo', $project->github_repo) }}"
+                                        placeholder="username/nama-repo"
+                                        required
+                                        class="flex-1 bg-transparent px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
+                                </div>
+                                <span class="text-[11px] text-slate-500 mt-1.5 block">
+                                    Contoh: <code class="text-indigo-300">myasirnovals/management-project-apps</code>
                                 </span>
-                                <input type="text" name="github_repo"
-                                    value="{{ old('github_repo', $project->github_repo) }}"
-                                    placeholder="username/nama-repo"
-                                    required
-                                    class="flex-1 bg-transparent px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
                             </div>
-                            <span class="text-[11px] text-slate-500 mt-1.5 block">
-                                Contoh: <code class="text-indigo-300">myasirnovals/management-project-apps</code>
-                            </span>
-                        </div>
 
-                        <!-- Automations toggles -->
-                        <div class="space-y-2.5 pt-2">
-                            <span class="text-xs font-semibold text-slate-300 block">Aturan Otomatisasi Status Tiket:</span>
+                            <!-- Automations toggles -->
+                            <div class="space-y-2.5 pt-2">
+                                <span class="text-xs font-semibold text-slate-300 block">Aturan Otomatisasi Status Tiket:</span>
 
-                            <label class="flex items-start gap-3 p-3 bg-slate-950/70 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition">
-                                <input type="checkbox" name="github_auto_move_pr" value="1"
-                                    {{ old('github_auto_move_pr', $project->github_auto_move_pr ?? true) ? 'checked' : '' }}
-                                    class="mt-0.5 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
-                                <div>
-                                    <div class="text-xs font-bold text-white">Otomatis pindah ke "In Review" saat PR dibuat</div>
-                                    <div class="text-[11px] text-slate-400 mt-0.5">
-                                        Ketika developer membuka PR dengan kode tiket (contoh: <code class="text-indigo-400">[{{ $project->key }}-1]</code>), tiket otomatis beralih ke <strong>In Review</strong>.
+                                <label class="flex items-start gap-3 p-3 bg-slate-950/70 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition">
+                                    <input type="checkbox" name="github_auto_move_pr" value="1"
+                                        {{ old('github_auto_move_pr', $project->github_auto_move_pr ?? true) ? 'checked' : '' }}
+                                        class="mt-0.5 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                    <div>
+                                        <div class="text-xs font-bold text-white">Otomatis pindah ke "In Review" saat PR dibuat</div>
+                                        <div class="text-[11px] text-slate-400 mt-0.5">
+                                            Ketika developer membuka PR dengan kode tiket (contoh: <code class="text-indigo-400">[{{ $project->key }}-1]</code>), tiket otomatis beralih ke <strong>In Review</strong>.
+                                        </div>
                                     </div>
-                                </div>
-                            </label>
+                                </label>
 
-                            <label class="flex items-start gap-3 p-3 bg-slate-950/70 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition">
-                                <input type="checkbox" name="github_auto_close_pr" value="1"
-                                    {{ old('github_auto_close_pr', $project->github_auto_close_pr ?? true) ? 'checked' : '' }}
-                                    class="mt-0.5 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
-                                <div>
-                                    <div class="text-xs font-bold text-white">Otomatis selesaikan tiket ("Done") saat PR di-merge</div>
-                                    <div class="text-[11px] text-slate-400 mt-0.5">
-                                        Saat kode PR digabungkan ke branch utama di GitHub, status tiket terkait langsung beralih ke <strong>Done</strong>.
+                                <label class="flex items-start gap-3 p-3 bg-slate-950/70 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition">
+                                    <input type="checkbox" name="github_auto_close_pr" value="1"
+                                        {{ old('github_auto_close_pr', $project->github_auto_close_pr ?? true) ? 'checked' : '' }}
+                                        class="mt-0.5 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                    <div>
+                                        <div class="text-xs font-bold text-white">Otomatis selesaikan tiket ("Done") saat PR di-merge</div>
+                                        <div class="text-[11px] text-slate-400 mt-0.5">
+                                            Saat kode PR digabungkan ke branch utama di GitHub, status tiket terkait langsung beralih ke <strong>Done</strong>.
+                                        </div>
                                     </div>
-                                </div>
-                            </label>
-                        </div>
+                                </label>
+                            </div>
 
-                        <div class="flex justify-end pt-2">
-                            <button type="submit"
-                                class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                                Simpan Konfigurasi
-                            </button>
+                            <div class="flex justify-end pt-2">
+                                <button type="submit"
+                                    class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
+                                    Simpan Konfigurasi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                @else
+                    <!-- Read-Only Information Card (For Developers / Non-PM) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
+                        <div class="border-b border-slate-800 pb-4">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <span>ℹ️</span>
+                                <span>Informasi Repositori GitHub Proyek</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">
+                                Status koneksi repositori dan aturan otomatisasi sinkronisasi Pull Request.
+                            </p>
                         </div>
-                    </form>
-                </div>
+                        <div class="space-y-3.5 text-xs text-slate-300">
+                            <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                                <span class="text-slate-400 block text-[11px] font-semibold uppercase">Repositori Terhubung:</span>
+                                <span class="text-white font-mono font-bold text-sm">{{ $project->github_repo ?: 'Belum dihubungkan ke GitHub' }}</span>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+                                <span class="text-slate-400 block text-[11px] font-semibold uppercase">Panduan Penamaan Branch & PR:</span>
+                                <p class="text-slate-300">Sertakan Issue Key pada branch atau judul PR Anda:</p>
+                                <code class="block p-2 rounded bg-slate-900 text-indigo-400 font-mono text-[11px]">feature/{{ strtolower($project->key) }}-1-implement-task</code>
+                                <p class="text-slate-400 text-[11px]">Ketika PR dibuka, tiket otomatis berpindah ke <strong class="text-indigo-300">In Review</strong>. Saat dimerge, otomatis berpindah ke <strong class="text-emerald-300">Done</strong>.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-500/20 text-indigo-300 text-[11px] flex items-center gap-2.5">
+                                <svg class="w-4 h-4 shrink-0 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Konfigurasi repositori dan webhook dikelola secara eksklusif oleh Project Manager.</span>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Activity Summary Card -->
                 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
@@ -197,35 +232,37 @@
                         </div>
                     </div>
 
-                    <!-- Webhook Secret -->
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-xs font-semibold text-slate-300">Secret Token (HMAC SHA-256)</label>
-                            @if($project->github_webhook_secret)
-                                <form method="POST" action="{{ route('projects.github.regenerateSecret', $project) }}" class="inline"
-                                    onsubmit="return confirm('Regenerate secret akan mengubah kunci keamanan webhook. Lanjutkan?')">
-                                    @csrf
-                                    <button type="submit" class="text-[11px] text-amber-400 hover:underline">
-                                        Regenerate
+                    @if($isProjectManager ?? false)
+                        <!-- Webhook Secret (PM Only) -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-300">Secret Token (HMAC SHA-256)</label>
+                                @if($project->github_webhook_secret)
+                                    <form method="POST" action="{{ route('projects.github.regenerateSecret', $project) }}" class="inline"
+                                        onsubmit="return confirm('Regenerate secret akan mengubah kunci keamanan webhook. Lanjutkan?')">
+                                        @csrf
+                                        <button type="submit" class="text-[11px] text-amber-400 hover:underline">
+                                            Regenerate
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="text" readonly id="webhookSecretInput"
+                                    value="{{ $project->github_webhook_secret ?? 'Belum dibuat (akan otomatis dibuat saat Anda menyimpan repositori)' }}"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 font-mono select-all">
+                                @if($project->github_webhook_secret)
+                                    <button type="button" onclick="copyToClipboard('webhookSecretInput', 'Secret Webhook berhasil disalin!')"
+                                        class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-semibold text-white transition shrink-0 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>Salin</span>
                                     </button>
-                                </form>
-                            @endif
+                                @endif
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <input type="text" readonly id="webhookSecretInput"
-                                value="{{ $project->github_webhook_secret ?? 'Belum dibuat (akan otomatis dibuat saat Anda menyimpan repositori)' }}"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 font-mono select-all">
-                            @if($project->github_webhook_secret)
-                                <button type="button" onclick="copyToClipboard('webhookSecretInput', 'Secret Webhook berhasil disalin!')"
-                                    class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-semibold text-white transition shrink-0 flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>Salin</span>
-                                </button>
-                            @endif
-                        </div>
-                    </div>
+                    @endif
 
                     <!-- 4 Step Guide with Clean UI -->
                     <div class="pt-2">

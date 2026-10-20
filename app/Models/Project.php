@@ -123,6 +123,11 @@ class Project extends Model
         return $this->hasMany(GithubPullRequest::class)->orderBy('pr_number', 'desc');
     }
 
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(ProjectFeedback::class)->latest();
+    }
+
     public function hasGithubIntegration(): bool
     {
         return !empty($this->github_repo);

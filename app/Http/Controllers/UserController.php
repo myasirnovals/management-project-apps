@@ -18,6 +18,10 @@ class UserController extends Controller
      */
     public function index(): View
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Fitur kelola tim dan anggota hanya dapat diakses oleh Project Manager.');
+        }
+
         $users = User::withCount(['assignedIssues', 'projects'])
             ->latest()
             ->paginate(15);
@@ -31,6 +35,9 @@ class UserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat menambahkan anggota baru.');
+        }
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -59,6 +66,10 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat memperbarui data anggota tim.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -93,6 +104,10 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat menghapus akun pengguna.');
+        }
+
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }

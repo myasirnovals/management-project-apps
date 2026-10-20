@@ -30,16 +30,29 @@
 * **Lampiran Bukti Pengerjaan**: Unggah screenshot kendala, dokumen analisis (gambar, PDF, Word, ZIP hingga 25 MB) dengan kontrol hak akses aman.
 * **Catatan Progres & Diskusi**: Diskusi interaktif antar anggota tim dengan dukungan tautan otomatis (*auto-link URL*).
 
-### 4. 📲 Notifikasi WhatsApp & SMTP Dinamis
+### 4. 💡 Kotak Saran & Aspirasi Tim (Feedback & Feature Requests)
+* **Kanal Aspirasi Terbuka**: Developer, Product Owner, Scrum Master, maupun Viewer dapat mengajukan usulan fitur baru, peningkatan alur kerja, kendala teknis, atau ide inovasi langsung ke Project Manager.
+* **Tanggapan & Moderasi PM**: Project Manager dapat mereview saran, memberikan catatan umpan balik, dan memperbarui status usulan (*Menunggu Review*, *Sedang Ditinjau*, *Direncanakan*, *Ditolak*).
+* **Konversi 1-Klik ke Backlog**: PM dapat menyetujui saran dan secara langsung mengubahnya menjadi tiket Issue nyata di Backlog proyek lengkap dengan atribusi pembuat saran.
+
+### 5. 🛡️ Kontrol Akses Berbasis Peran Ketat (Role-Based Access Control / RBAC)
+* **Pemisahan Hirarki Jelas**:
+  * **Project Manager (PM)**: Hak akses administratif penuh terhadap Konfigurasi Aplikasi (SMTP, WhatsApp, Kalender), Manajemen Pengguna & Peran, Pengaturan Repositori GitHub & Webhook Secrets, serta Manajemen Anggota Tim.
+  * **Product Owner (PO)**: Fokus pada kurasi Backlog, Komponen Modul, dan Versi Rilis (*Releases*).
+  * **Scrum Master (SM)**: Otoritas memulai, menyelesaikan, dan mengelola siklus Sprint aktif.
+  * **Developer**: Pengerjaan tiket, perpindahan status board (*To Do* ke *Done*), unggah bukti lampiran, catatan progres, dan pengajuan saran fitur.
+  * **Viewer**: Akses pantau aman (*read-only*) tanpa izin memanipulasi tiket/board, namun tetap dapat berpartisipasi menyampaikan masukan di Kotak Saran.
+
+### 6. 📲 Notifikasi WhatsApp & SMTP Dinamis
 * **WhatsApp Direct Service**: Kirim pengingat tugas, peringatan keterlambatan (*overdue*), dan eskalasi langsung ke nomor WhatsApp pengembang hanya dengan satu klik.
 * **Pengaturan SMTP Dinamis**: Konfigurasi kredensial SMTP (Brevo, Gmail, Mailtrap, dll.) yang tersimpan aman pada storage aplikasi tanpa perlu me-restart server.
 
-### 5. 🗂️ Manajemen Backlog & Siklus Hidup Sprint
+### 7. 🗂️ Manajemen Backlog & Siklus Hidup Sprint
 * **Backlog Planning**: Pengelompokan tiket ke dalam sprint, estimasi *Story Points*, prioritas tiket, serta penetapan komponen.
 * **Aksi Massal (*Bulk Actions*)**: Pindahkan beberapa tiket sekaligus, pembersihan backlog otomatis, dan ekspor data ke format CSV.
 * **Siklus Sprint**: Validasi sprint aktif ganda dan pemindahan tiket yang belum selesai secara otomatis ke backlog atau sprint berikutnya.
 
-### 6. 📊 Laporan Analitik Agile
+### 8. 📊 Laporan Analitik Agile
 * **Burndown Chart**: Melacak sisa pekerjaan vs target waktu sprint.
 * **Burnup Chart**: Mengukur total cakupan pekerjaan yang diselesaikan seiring waktu.
 * **Velocity Chart**: Menghitung kapasitas dan kecepatan tim per sprint.
@@ -53,8 +66,8 @@
 * **Backend**: [Laravel 12](https://laravel.com), PHP 8.2+
 * **Frontend**: Blade Templates, [Tailwind CSS](https://tailwindcss.com), Alpine.js / Vanilla JavaScript
 * **Database**: MySQL / SQLite (dengan integritas relasional dan *cascading delete*)
-* **Pengujian**: PHPUnit / Pest (70+ pengujian unit & fitur otomatis)
-* **Autentikasi**: Laravel Session Auth berbasis peran (*Role-Based Access Control*)
+* **Pengujian**: PHPUnit / Pest (75 pengujian unit & fitur otomatis, 399 assertions)
+* **Autentikasi**: Laravel Session Auth dengan Middleware RBAC ketat (`role.pm`, `not.viewer`)
 
 ---
 

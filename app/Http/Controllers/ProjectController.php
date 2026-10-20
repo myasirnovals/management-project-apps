@@ -21,11 +21,19 @@ class ProjectController extends Controller
 
     public function create(): View
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat membuat proyek baru.');
+        }
+
         return view('projects.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat membuat proyek baru.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'key' => ['required', 'string', 'max:10', 'regex:/^[A-Z0-9]+$/', 'unique:projects,key'],
@@ -58,12 +66,20 @@ class ProjectController extends Controller
 
     public function edit(Project $project): View
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat mengakses pengaturan proyek.');
+        }
+
         $users = User::where('is_active', true)->orderBy('name')->get();
         return view('projects.edit', compact('project', 'users'));
     }
 
     public function update(Request $request, Project $project): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat mengubah pengaturan proyek.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -79,6 +95,10 @@ class ProjectController extends Controller
 
     public function destroy(Project $project): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat menghapus proyek.');
+        }
+
         $name = $project->name;
         $project->delete();
 
@@ -88,6 +108,10 @@ class ProjectController extends Controller
 
     public function addMember(Request $request, Project $project): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat mengelola anggota proyek.');
+        }
+
         $validated = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
             'role' => ['required', 'string'],
@@ -102,6 +126,10 @@ class ProjectController extends Controller
 
     public function removeMember(Project $project, User $user): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang dapat menghapus anggota proyek.');
+        }
+
         $project->members()->detach($user->id);
         return back()->with('success', 'Anggota tim telah dikeluarkan dari proyek.');
     }

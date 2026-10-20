@@ -183,6 +183,13 @@ class BoardController extends Controller
      */
     public function updateStatus(Request $request, Project $project): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Peran Viewer hanya memiliki izin baca (read-only).'], 403);
+            }
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $validated = $request->validate([
             'issue_id' => ['required', 'exists:issues,id'],
             'status' => ['required', 'in:to_do,in_progress,in_review,done'],

@@ -21,6 +21,10 @@ class IssueController extends Controller
      */
     public function store(Request $request, Project $project): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(IssueType::class)],
@@ -172,6 +176,10 @@ class IssueController extends Controller
      */
     public function update(Request $request, Project $project, Issue $issue): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -207,6 +215,10 @@ class IssueController extends Controller
      */
     public function storeSubtask(Request $request, Project $project, Issue $issue): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'assignee_id' => ['nullable', 'exists:users,id'],
@@ -247,6 +259,10 @@ class IssueController extends Controller
      */
     public function destroy(Project $project, Issue $issue): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $key = $issue->issue_key;
         $issue->delete();
 

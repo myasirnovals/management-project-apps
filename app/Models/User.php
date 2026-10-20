@@ -91,11 +91,64 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is Project Manager or Admin.
+     * Check if user is Project Manager.
      */
     public function isProjectManager(): bool
     {
+        return $this->role === UserRole::PROJECT_MANAGER;
+    }
+
+    public function isScrumMaster(): bool
+    {
+        return $this->role === UserRole::SCRUM_MASTER;
+    }
+
+    public function isProductOwner(): bool
+    {
+        return $this->role === UserRole::PRODUCT_OWNER;
+    }
+
+    public function isDeveloper(): bool
+    {
+        return $this->role === UserRole::DEVELOPER;
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->role === UserRole::VIEWER;
+    }
+
+    public function canManageSprints(): bool
+    {
         return in_array($this->role, [UserRole::PROJECT_MANAGER, UserRole::SCRUM_MASTER]);
+    }
+
+    public function canManageBacklog(): bool
+    {
+        return in_array($this->role, [UserRole::PROJECT_MANAGER, UserRole::PRODUCT_OWNER]);
+    }
+
+    public function canManageReleases(): bool
+    {
+        return in_array($this->role, [UserRole::PROJECT_MANAGER, UserRole::PRODUCT_OWNER]);
+    }
+
+    public function canManageComponents(): bool
+    {
+        return in_array($this->role, [UserRole::PROJECT_MANAGER, UserRole::PRODUCT_OWNER]);
+    }
+
+    public function canMutateIssues(): bool
+    {
+        return $this->role !== UserRole::VIEWER;
+    }
+
+    /**
+     * Feedbacks submitted by the user.
+     */
+    public function submittedFeedbacks(): HasMany
+    {
+        return $this->hasMany(ProjectFeedback::class, 'user_id');
     }
 
     /**

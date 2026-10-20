@@ -24,6 +24,10 @@ class ReleaseController extends Controller
 
     public function store(Request $request, Project $project): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageReleases()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang membuat versi rilis.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -44,6 +48,10 @@ class ReleaseController extends Controller
 
     public function update(Request $request, Project $project, ReleaseVersion $version): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageReleases()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang memperbarui versi rilis.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -62,6 +70,10 @@ class ReleaseController extends Controller
      */
     public function release(Request $request, Project $project, ReleaseVersion $version): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageReleases()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang mengeksekusi rilis.');
+        }
+
         $unresolvedIssues = $version->issues()->where('status', '!=', IssueStatus::DONE->value)->count();
 
         // Release Scope Lock check
@@ -79,6 +91,10 @@ class ReleaseController extends Controller
 
     public function destroy(Project $project, ReleaseVersion $version): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageReleases()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang menghapus versi rilis.');
+        }
+
         $name = $version->name;
         // Unlink issues from version
         $version->issues()->update(['version_id' => null]);

@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\View\View;
@@ -78,6 +79,13 @@ class BacklogController extends Controller
      */
     public function moveToSprint(Request $request, Project $project): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Peran Viewer hanya memiliki hak baca (read-only).'], 403);
+            }
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $validated = $request->validate([
             'issue_id' => ['required', 'exists:issues,id'],
             'sprint_id' => ['nullable', 'exists:sprints,id'],
@@ -102,6 +110,10 @@ class BacklogController extends Controller
      */
     public function cleanUp(Request $request, Project $project): RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $days = (int) $request->input('days', 90);
         $thresholdDate = Carbon::now()->subDays($days);
 
@@ -119,6 +131,10 @@ class BacklogController extends Controller
      */
     public function bulkAction(Request $request, Project $project): RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $action = $request->input('action'); // 'delete', 'change_status', 'move_sprint'
         $issueIds = $request->input('issue_ids', []);
 

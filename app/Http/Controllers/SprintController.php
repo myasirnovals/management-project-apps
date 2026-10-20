@@ -19,6 +19,10 @@ class SprintController extends Controller
      */
     public function store(Request $request, Project $project): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageSprints()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Scrum Master yang berwenang membuat Sprint baru.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'goal' => ['nullable', 'string'],
@@ -52,6 +56,10 @@ class SprintController extends Controller
      */
     public function start(Request $request, Project $project, Sprint $sprint): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageSprints()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Scrum Master yang berwenang memulai Sprint.');
+        }
+
         // Check if there is already an active sprint in this project
         $activeSprint = $project->sprints()->where('status', SprintStatus::ACTIVE->value)->first();
         if ($activeSprint && $activeSprint->id !== $sprint->id) {
@@ -83,6 +91,10 @@ class SprintController extends Controller
      */
     public function complete(Request $request, Project $project, Sprint $sprint): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageSprints()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Scrum Master yang berwenang menyelesaikan Sprint.');
+        }
+
         $incompleteIssues = $sprint->issues()->where('status', '!=', IssueStatus::DONE->value)->get();
         $moveTarget = $request->input('incomplete_action', 'backlog'); // 'backlog' or next sprint_id
 
@@ -111,6 +123,10 @@ class SprintController extends Controller
      */
     public function destroy(Project $project, Sprint $sprint): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageSprints()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Scrum Master yang berwenang menghapus Sprint.');
+        }
+
         // Move any issues in this sprint back to backlog
         $sprint->issues()->update(['sprint_id' => null]);
         $sprint->delete();

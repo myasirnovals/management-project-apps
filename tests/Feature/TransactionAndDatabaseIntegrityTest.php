@@ -337,10 +337,9 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
         $pm = User::where('email', 'admin@project.local')->first();
         $developer = User::where('role', \App\Enums\UserRole::DEVELOPER->value)->first();
 
-        // Developer can view page in read-only
+        // Developer cannot access application settings page (403 Forbidden)
         $devView = $this->actingAs($developer)->get('/pengaturan-aplikasi');
-        $devView->assertStatus(200);
-        $devView->assertSee('Pengaturan Aplikasi');
+        $devView->assertStatus(403);
 
         // Developer cannot mutate application settings (403)
         $devUpdate = $this->actingAs($developer)->post('/pengaturan-aplikasi', [

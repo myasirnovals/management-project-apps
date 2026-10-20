@@ -17,6 +17,7 @@ use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProjectFeedbackController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect root to dashboard if logged in, or login if guest
@@ -38,35 +39,48 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 // Authenticated Application Routes
 Route::middleware('auth')->group(function () {
-    // Dashboard
+    // Dashboard (All Authenticated Users)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // User & Team Management (Only Admin/Project Manager invites members)
-    Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
-
-    // Project Management
-    Route::resource('projects', ProjectController::class);
-    Route::post('/projects/{project}/members', [ProjectController::class, 'addMember'])->name('projects.members.add');
-    Route::delete('/projects/{project}/members/{user}', [ProjectController::class, 'removeMember'])->name('projects.members.remove');
-
-    // Project Calendar (/kalender-proyek)
+    // Global Workspace Calendar (/kalender-proyek)
     Route::get('/kalender-proyek', [CalendarController::class, 'index'])->name('calendar.index');
-    Route::post('/kalender-proyek/settings', [CalendarController::class, 'updateSettings'])->name('calendar.settings.update');
+    Route::post('/kalender-proyek/settings', [CalendarController::class, 'updateSettings'])
+        ->middleware('role.pm')
+        ->name('calendar.settings.update');
 
-    // Application Settings (/pengaturan-aplikasi)
-    Route::get('/pengaturan-aplikasi', [AppSettingsController::class, 'index'])->name('app.settings');
-    Route::post('/pengaturan-aplikasi', [AppSettingsController::class, 'update'])->name('app.settings.update');
-    Route::post('/pengaturan-aplikasi/trigger-reminders', [AppSettingsController::class, 'triggerReminders'])->name('app.settings.triggerReminders');
+    // User & Team Management (Only Project Manager)
+    Route::resource('users', UserController::class)
+        ->except(['create', 'show', 'edit'])
+        ->middleware('role.pm');
 
-    // Project Settings Shortcut (/pengaturan)
-    Route::get('/pengaturan', function () {
-        $project = \App\Models\Project::first();
-        if ($project) {
-            return redirect()->route('projects.edit', $project);
-        }
-        return redirect()->route('dashboard')
-            ->with('info', 'Belum ada proyek yang dibuat. Silakan buat proyek terlebih dahulu.');
-    })->name('pengaturan');
+    // Application Settings (Only Project Manager)
+    Route::middleware('role.pm')->group(function () {
+        Route::get('/pengaturan-aplikasi', [AppSettingsController::class, 'index'])->name('app.settings');
+        Route::post('/pengaturan-aplikasi', [AppSettingsController::class, 'update'])->name('app.settings.update');
+        Route::post('/pengaturan-aplikasi/trigger-reminders', [AppSettingsController::class, 'triggerReminders'])->name('app.settings.triggerReminders');
+
+        // Project Creation & Global Settings Shortcut
+        Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+        Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+        Route::get('/projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
+        Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
+        Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+        Route::post('/projects/{project}/members', [ProjectController::class, 'addMember'])->name('projects.members.add');
+        Route::delete('/projects/{project}/members/{user}', [ProjectController::class, 'removeMember'])->name('projects.members.remove');
+
+        Route::get('/pengaturan', function () {
+            $project = \App\Models\Project::first();
+            if ($project) {
+                return redirect()->route('projects.edit', $project);
+            }
+            return redirect()->route('dashboard')
+                ->with('info', 'Belum ada proyek yang dibuat. Silakan buat proyek terlebih dahulu.');
+        })->name('pengaturan');
+    });
+
+    // Project Read / Show Routes
+    Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
+    Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
 
     // Nested Project Routes
     Route::prefix('projects/{project}')->name('projects.')->group(function () {
@@ -84,6 +98,18 @@ Route::middleware('auth')->group(function () {
 
         // Project Timeline & Calendar
         Route::get('/timeline-calendar', [CalendarController::class, 'projectTimeline'])->name('timeline');
+
+        // Saran & Masukan (Project Feedback / Feature Requests)
+        Route::get('/feedback', [ProjectFeedbackController::class, 'index'])->name('feedback.index');
+        Route::post('/feedback', [ProjectFeedbackController::class, 'store'])->name('feedback.store');
+        Route::put('/feedback/{feedback}', [ProjectFeedbackController::class, 'updateResponse'])
+            ->middleware('role.pm')
+            ->name('feedback.response');
+        Route::post('/feedback/{feedback}/convert', [ProjectFeedbackController::class, 'convertToIssue'])
+            ->middleware('role.pm')
+            ->name('feedback.convert');
+        Route::delete('/feedback/{feedback}', [ProjectFeedbackController::class, 'destroy'])
+            ->name('feedback.destroy');
 
         // Sprints (Modul III.B)
         Route::post('/sprints', [SprintController::class, 'store'])->name('sprints.store');
@@ -128,10 +154,19 @@ Route::middleware('auth')->group(function () {
 
         // GitHub Integration (Per-Project)
         Route::get('/github', [GitHubIntegrationController::class, 'index'])->name('github.index');
-        Route::post('/github', [GitHubIntegrationController::class, 'update'])->name('github.update');
-        Route::post('/github/regenerate-secret', [GitHubIntegrationController::class, 'regenerateSecret'])->name('github.regenerateSecret');
-        Route::delete('/github', [GitHubIntegrationController::class, 'disconnect'])->name('github.disconnect');
-        Route::post('/github/simulate', [GitHubIntegrationController::class, 'simulate'])->name('github.simulate');
+        Route::middleware('role.pm')->group(function () {
+            Route::post('/github', [GitHubIntegrationController::class, 'update'])->name('github.update');
+            Route::post('/github/regenerate-secret', [GitHubIntegrationController::class, 'regenerateSecret'])->name('github.regenerateSecret');
+            Route::delete('/github', [GitHubIntegrationController::class, 'disconnect'])->name('github.disconnect');
+            Route::post('/github/simulate', [GitHubIntegrationController::class, 'simulate'])->name('github.simulate');
+        });
+
+        // Kotak Saran & Masukan Tim (Feature Requests & Improvements)
+        Route::get('/feedback', [ProjectFeedbackController::class, 'index'])->name('feedback.index');
+        Route::post('/feedback', [ProjectFeedbackController::class, 'store'])->name('feedback.store');
+        Route::patch('/feedback/{feedback}', [ProjectFeedbackController::class, 'updateResponse'])->name('feedback.response');
+        Route::post('/feedback/{feedback}/convert', [ProjectFeedbackController::class, 'convertToIssue'])->name('feedback.convert');
+        Route::delete('/feedback/{feedback}', [ProjectFeedbackController::class, 'destroy'])->name('feedback.destroy');
     });
 });
 

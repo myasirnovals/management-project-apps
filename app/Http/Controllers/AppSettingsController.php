@@ -14,8 +14,12 @@ class AppSettingsController extends Controller
      */
     public function index(): View
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Pengaturan aplikasi hanya dapat diakses oleh Project Manager.');
+        }
+
         $settings = $this->loadSettings();
-        $isProjectManager = $this->isProjectManager();
+        $isProjectManager = true;
 
         return view('settings.index', compact('settings', 'isProjectManager'));
     }
@@ -26,7 +30,7 @@ class AppSettingsController extends Controller
     public function update(Request $request)
     {
         if (!$this->isProjectManager()) {
-            abort(403, 'Hanya Project Manager atau Scrum Master yang memiliki wewenang untuk mengubah pengaturan aplikasi.');
+            abort(403, 'Akses ditolak. Hanya Project Manager yang memiliki wewenang untuk mengubah pengaturan aplikasi.');
         }
 
         $validated = $request->validate([

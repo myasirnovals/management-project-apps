@@ -24,8 +24,9 @@ class GitHubIntegrationController extends Controller
         $webhookUrl = $project->getGithubWebhookUrl();
         $pullRequests = $project->pullRequests;
         $projectIssues = $project->issues;
+        $isProjectManager = $this->isProjectManager();
 
-        return view('projects.github.index', compact('project', 'webhookUrl', 'pullRequests', 'projectIssues'));
+        return view('projects.github.index', compact('project', 'webhookUrl', 'pullRequests', 'projectIssues', 'isProjectManager'));
     }
 
     /**
@@ -33,6 +34,10 @@ class GitHubIntegrationController extends Controller
      */
     public function update(Request $request, Project $project): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang berwenang mengubah konfigurasi repositori GitHub.');
+        }
+
         $validated = $request->validate([
             'github_repo' => ['required', 'string', 'max:255'],
             'github_auto_move_pr' => ['nullable', 'boolean'],
@@ -66,6 +71,10 @@ class GitHubIntegrationController extends Controller
      */
     public function regenerateSecret(Project $project): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang berwenang memperbarui secret webhook GitHub.');
+        }
+
         $newSecret = $project->generateWebhookSecret();
         $project->update(['github_webhook_secret' => $newSecret]);
 
@@ -78,6 +87,10 @@ class GitHubIntegrationController extends Controller
      */
     public function disconnect(Project $project): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang berwenang memutus integrasi repositori GitHub.');
+        }
+
         $oldRepo = $project->github_repo;
         $project->update([
             'github_repo' => null,
@@ -93,6 +106,10 @@ class GitHubIntegrationController extends Controller
      */
     public function simulate(Request $request, Project $project, GitHubWebhookService $webhookService): RedirectResponse
     {
+        if (!$this->isProjectManager()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager yang berwenang menjalankan simulator webhook.');
+        }
+
         $validated = $request->validate([
             'action' => ['required', 'in:opened,merged'],
             'issue_id' => ['nullable', 'exists:issues,id'],

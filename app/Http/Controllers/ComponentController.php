@@ -25,6 +25,10 @@ class ComponentController extends Controller
 
     public function store(Request $request, Project $project): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageComponents()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang membuat komponen.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -38,6 +42,10 @@ class ComponentController extends Controller
 
     public function update(Request $request, Project $project, Component $component): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageComponents()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang memperbarui komponen.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -51,6 +59,10 @@ class ComponentController extends Controller
 
     public function destroy(Project $project, Component $component): RedirectResponse
     {
+        if (!\Illuminate\Support\Facades\Auth::user()?->canManageComponents()) {
+            abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang menghapus komponen.');
+        }
+
         $name = $component->name;
         $component->delete();
 

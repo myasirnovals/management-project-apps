@@ -34,9 +34,12 @@ class UserUnitTest extends TestCase
         $viewer = User::factory()->make(['role' => UserRole::VIEWER]);
 
         $this->assertTrue($pm->isProjectManager());
-        $this->assertTrue($sm->isProjectManager());
+        $this->assertFalse($sm->isProjectManager());
+        $this->assertTrue($sm->isScrumMaster());
+        $this->assertTrue($sm->canManageSprints());
         $this->assertFalse($dev->isProjectManager());
         $this->assertFalse($viewer->isProjectManager());
+        $this->assertFalse($viewer->canMutateIssues());
 
         $this->assertEquals('Project Manager', UserRole::PROJECT_MANAGER->label());
         $this->assertEquals('Scrum Master', UserRole::SCRUM_MASTER->label());

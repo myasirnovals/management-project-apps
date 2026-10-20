@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/github/webhook',
             'api/projects/*/github/webhook',
         ]);
+
+        $middleware->alias([
+            'role.pm' => \App\Http\Middleware\EnsureProjectManager::class,
+            'not.viewer' => \App\Http\Middleware\EnsureNotViewer::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

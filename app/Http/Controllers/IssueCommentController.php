@@ -17,6 +17,13 @@ class IssueCommentController extends Controller
      */
     public function store(Request $request, Project $project, Issue $issue): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->canMutateIssues()) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Peran Viewer tidak dapat memberikan komentar.'], 403);
+            }
+            abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
+        }
+
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:5000'],
         ]);
