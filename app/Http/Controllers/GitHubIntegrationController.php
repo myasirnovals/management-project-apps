@@ -108,6 +108,11 @@ class GitHubIntegrationController extends Controller
         $branchHead = 'feature/' . ($issue ? strtolower($issue->issue_key) : strtolower($project->key) . '-1') . '-patch';
         $repoName = $project->github_repo ?: "org/{$project->key}-repo";
 
+        $currentUser = $request->user();
+        $developerLogin = ($currentUser && $currentUser->name)
+            ? strtolower(str_replace(' ', '', $currentUser->name))
+            : 'developer';
+
         $payload = [
             'action' => $action === 'merged' ? 'closed' : 'opened',
             'repository' => [
@@ -131,7 +136,7 @@ class GitHubIntegrationController extends Controller
                     'ref' => 'main',
                 ],
                 'user' => [
-                    'login' => auth()->user()?->name ? strtolower(str_replace(' ', '', auth()->user()->name)) : 'developer',
+                    'login' => $developerLogin,
                     'avatar_url' => 'https://avatars.githubusercontent.com/u/9919?v=4',
                 ],
                 'body' => "Simulasi Pull Request untuk tiket " . ($issue ? $issue->issue_key : $project->key . '-1') . " via Webhook Simulator.",
