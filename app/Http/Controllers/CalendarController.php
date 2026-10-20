@@ -10,6 +10,7 @@ use App\Models\Sprint;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class CalendarController extends Controller
@@ -158,7 +159,7 @@ class CalendarController extends Controller
             ? "https://calendar.google.com/calendar/u/0/r?cid=" . urlencode($calendarId)
             : "https://calendar.google.com/calendar";
 
-        $isProjectManager = auth()->check() && auth()->user()->isProjectManager();
+        $isProjectManager = $this->isProjectManager();
 
         return view('calendar.index', compact(
             'monthDate',
@@ -241,7 +242,7 @@ class CalendarController extends Controller
         $upcomingIssues = $issuesWithDue->where('status', '!=', IssueStatus::DONE->value);
         $doneIssues = $issuesWithDue->where('status', IssueStatus::DONE->value);
 
-        $isProjectManager = auth()->check() && auth()->user()->isProjectManager();
+        $isProjectManager = $this->isProjectManager();
 
         return view('projects.timeline', compact(
             'project',
@@ -264,7 +265,7 @@ class CalendarController extends Controller
      */
     public function updateSettings(Request $request)
     {
-        if (!auth()->check() || !auth()->user()->isProjectManager()) {
+        if (!$this->isProjectManager()) {
             abort(403, 'Hanya Project Manager atau Scrum Master yang memiliki wewenang untuk mengubah pengaturan kalender proyek.');
         }
 

@@ -58,10 +58,10 @@ class WhatsAppService
         $dueDateText = $issue->due_date ? $issue->due_date->format('d M Y') : 'Belum ditentukan';
         $statusText = $issue->status ? $issue->status->label() : 'To Do';
         $priorityText = $issue->priority ? $issue->priority->label() : 'Medium';
-        
+
         $baseUrl = config('app.url', url('/'));
-        $issueUrl = $issue->project 
-            ? "{$baseUrl}/projects/{$issue->project->code}/board" 
+        $issueUrl = $issue->project
+            ? "{$baseUrl}/projects/{$issue->project->code}/board"
             : $baseUrl;
 
         return match ($type) {
@@ -110,17 +110,22 @@ class WhatsAppService
                     'countryCode' => '62',
                 ]);
 
-                if ($response->successful()) {
+                $json = $response->json();
+                $isSuccess = $response->successful() && is_array($json) && !empty($json['status']);
+
+                if ($isSuccess) {
                     return [
                         'success' => true,
                         'message' => 'Pesan WhatsApp berhasil dikirim via Fonnte.',
-                        'data' => $response->json(),
+                        'data' => $json,
                     ];
                 }
 
+                $reason = is_array($json) ? ($json['reason'] ?? $json['message'] ?? json_encode($json)) : $response->body();
                 return [
                     'success' => false,
-                    'message' => 'Gagal mengirim pesan via Fonnte: ' . $response->body(),
+                    'message' => 'Gagal mengirim pesan via Fonnte: ' . $reason,
+                    'data' => is_array($json) ? $json : null,
                 ];
             }
 

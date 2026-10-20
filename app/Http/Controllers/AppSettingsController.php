@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AppSettingsController extends Controller
@@ -13,7 +15,7 @@ class AppSettingsController extends Controller
     public function index(): View
     {
         $settings = $this->loadSettings();
-        $isProjectManager = auth()->check() && auth()->user()->isProjectManager();
+        $isProjectManager = $this->isProjectManager();
 
         return view('settings.index', compact('settings', 'isProjectManager'));
     }
@@ -23,7 +25,7 @@ class AppSettingsController extends Controller
      */
     public function update(Request $request)
     {
-        if (!auth()->check() || !auth()->user()->isProjectManager()) {
+        if (!$this->isProjectManager()) {
             abort(403, 'Hanya Project Manager atau Scrum Master yang memiliki wewenang untuk mengubah pengaturan aplikasi.');
         }
 
@@ -138,12 +140,12 @@ class AppSettingsController extends Controller
      */
     public function triggerReminders()
     {
-        if (!auth()->check() || !auth()->user()->isProjectManager()) {
+        if (!$this->isProjectManager()) {
             abort(403);
         }
 
-        \Illuminate\Support\Facades\Artisan::call('reminders:send-due-dates');
-        $output = trim(\Illuminate\Support\Facades\Artisan::output());
+        Artisan::call('reminders:send-due-dates');
+        $output = trim(Artisan::output());
 
         return redirect()->route('app.settings')
             ->with('success', 'Pemeriksaan pengingat deadline berhasil dijalankan! ' . ($output ? "Hasil: {$output}" : ''));
