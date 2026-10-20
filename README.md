@@ -1,59 +1,167 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🚀 AgilePM — Modern Agile Project Management Studio
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Latest Version](https://img.shields.io/badge/release-v1.4.0-indigo.svg?style=flat-square)](https://github.com/myasirnovals/management-project-apps/releases/tag/v1.4.0)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat-square)](LICENSE)
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg?style=flat-square&logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-%3E%3D_8.2-purple.svg?style=flat-square&logo=php)](https://php.net)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.x-38B2AC.svg?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 
-## About Laravel
+**AgilePM** adalah aplikasi manajemen proyek modern berbasis web yang dirancang khusus untuk memfasilitasi alur kerja metodologi **Agile**, **Scrum**, dan **Kanban**. Dilengkapi dengan otomatisasi **GitHub Webhooks**, pengingat **WhatsApp langsung**, notifikasi email SMTP dinamis, serta sistem kolaborasi tiket (lampiran & diskusi progres) untuk tim pengembang perangkat lunak.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🌟 Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. 📋 Papan Agile Fleksibel (Scrum & Kanban)
+* **Scrum Board**: Alur kerja berbasis sprint dengan batas WIP (*Work-in-Progress constraints*), *swimlanes* berdasarkan Assignee atau Epic, dan filter instan.
+* **Kanban Board**: Alur kerja kontinu dengan fitur *drag-and-drop* intuitif antar kolom status (*To Do*, *In Progress*, *In Review*, *Done*).
+* **Indikator Pull Request Langsung**: Kartu tiket secara otomatis menampilkan badge PR GitHub aktif (contoh: `PR #12`) saat terhubung dengan kode repositori.
 
-## Learning Laravel
+### 2. 🐙 Integrasi GitHub Per-Proyek & Otomatisasi Webhooks
+* **Terisolasi & Opsional**: Setiap proyek dapat dihubungkan ke repositori GitHub masing-masing secara independen tanpa memengaruhi proyek lain.
+* **Otomatisasi Status Tiket**:
+  * Ketika developer membuka Pull Request dengan kode tiket (contoh: `[PRK-42]`), status tiket otomatis beralih ke **In Review**.
+  * Ketika Pull Request di-merge ke branch utama, status tiket otomatis diselesaikan (**Done**).
+* **Riwayat & Catatan Otomatis**: Log aktivitas PR tercatat otomatis di kolom komentar tiket dan pada dashboard riwayat integrasi.
+* **Verifikasi Keamanan**: Didukung validasi tanda tangan HMAC SHA-256 (*Webhook Secret*).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 3. 💬 Kolaborasi Tiket (Lampiran & Diskusi)
+* **Detail Tiket Slideover & Pop-up Modal**: Tampilan detail tiket yang komprehensif tanpa perlu meninggalkan halaman papan pengerjaan.
+* **Lampiran Bukti Pengerjaan**: Unggah screenshot kendala, dokumen analisis (gambar, PDF, Word, ZIP hingga 25 MB) dengan kontrol hak akses aman.
+* **Catatan Progres & Diskusi**: Diskusi interaktif antar anggota tim dengan dukungan tautan otomatis (*auto-link URL*).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 4. 📲 Notifikasi WhatsApp & SMTP Dinamis
+* **WhatsApp Direct Service**: Kirim pengingat tugas, peringatan keterlambatan (*overdue*), dan eskalasi langsung ke nomor WhatsApp pengembang hanya dengan satu klik.
+* **Pengaturan SMTP Dinamis**: Konfigurasi kredensial SMTP (Brevo, Gmail, Mailtrap, dll.) yang tersimpan aman pada storage aplikasi tanpa perlu me-restart server.
 
-## Laravel Sponsors
+### 5. 🗂️ Manajemen Backlog & Siklus Hidup Sprint
+* **Backlog Planning**: Pengelompokan tiket ke dalam sprint, estimasi *Story Points*, prioritas tiket, serta penetapan komponen.
+* **Aksi Massal (*Bulk Actions*)**: Pindahkan beberapa tiket sekaligus, pembersihan backlog otomatis, dan ekspor data ke format CSV.
+* **Siklus Sprint**: Validasi sprint aktif ganda dan pemindahan tiket yang belum selesai secara otomatis ke backlog atau sprint berikutnya.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 6. 📊 Laporan Analitik Agile
+* **Burndown Chart**: Melacak sisa pekerjaan vs target waktu sprint.
+* **Burnup Chart**: Mengukur total cakupan pekerjaan yang diselesaikan seiring waktu.
+* **Velocity Chart**: Menghitung kapasitas dan kecepatan tim per sprint.
+* **Cumulative Flow Diagram (CFD)**: Menganalisis stabilitas alur kerja dan hambatan (*bottleneck*).
+* **Epic Report**: Pemantauan progres penyelesaian inisiatif besar (*Epics*).
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🛠️ Tumpukan Teknologi (Tech Stack)
 
-## Contributing
+* **Backend**: [Laravel 12](https://laravel.com), PHP 8.2+
+* **Frontend**: Blade Templates, [Tailwind CSS](https://tailwindcss.com), Alpine.js / Vanilla JavaScript
+* **Database**: MySQL / SQLite (dengan integritas relasional dan *cascading delete*)
+* **Pengujian**: PHPUnit / Pest (70+ pengujian unit & fitur otomatis)
+* **Autentikasi**: Laravel Session Auth berbasis peran (*Role-Based Access Control*)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🚀 Panduan Instalasi & Menjalankan Aplikasi
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Prasyarat
+* PHP >= 8.2 (ekstensi: `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `curl`)
+* [Composer](https://getcomposer.org/)
+* [Node.js](https://nodejs.org/) & NPM
+* Server Database (MySQL / MariaDB)
 
-## Security Vulnerabilities
+### Langkah-langkah:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. **Clone Repositori**:
+   ```bash
+   git clone https://github.com/myasirnovals/management-project-apps.git
+   cd management-project-apps
+   ```
 
-## License
+2. **Pasang Dependensi PHP**:
+   ```bash
+   composer install
+   ```
 
-This project is open-sourced software licensed under the [Apache License, Version 2.0](LICENSE).
+3. **Pasang Dependensi Frontend & Build Aset**:
+   ```bash
+   npm install
+   npm run build
+   ```
+
+4. **Konfigurasi Environment**:
+   Salin file `.env.example` ke `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Buka file `.env` dan sesuaikan koneksi database Anda:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=nama_database_anda
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+5. **Generate Kunci Aplikasi**:
+   ```bash
+   php artisan key:generate
+   ```
+
+6. **Jalankan Migrasi & Seeder Data Awal**:
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Jalankan Penyimpanan Simbolik (Storage Link)**:
+   ```bash
+   php artisan storage:link
+   ```
+
+8. **Nyalakan Server Lokal**:
+   ```bash
+   php artisan serve
+   ```
+   Aplikasi siap diakses melalui peramban di: **`http://127.0.0.1:8000`** (atau port yang tertera pada terminal).
+
+---
+
+## 🔑 Akun Demo / Pengguna Awal
+
+Setelah menjalankan migrasi dengan `--seed`, Anda dapat masuk menggunakan akun bawaan berikut:
+
+| Peran (Role) | Email | Password |
+| :--- | :--- | :--- |
+| **Project Manager / Admin** | `admin@project.local` | `password123` |
+| **Product Owner** | `po@project.local` | `password123` |
+| **Developer** | `yessi@project.local` | `password123` |
+
+---
+
+## 🔗 Menghubungkan Proyek ke GitHub
+
+1. Masuk ke aplikasi dan pilih proyek yang ingin dihubungkan.
+2. Pada menu sidebar kiri, klik **GitHub & PR**.
+3. Masukkan nama repositori GitHub Anda (contoh: `username/nama-repo`) lalu klik **Simpan Konfigurasi**.
+4. Salin **Payload URL** dan **Secret Token** yang ditampilkan di halaman tersebut.
+5. Di repositori GitHub Anda:
+   * Masuk ke menu **Settings** &rarr; **Webhooks** &rarr; klik **Add webhook**.
+   * Tempelkan **Payload URL** dan **Secret**.
+   * Ubah *Content type* menjadi `application/json`.
+   * Pada pilihan event, pilih *"Let me select individual events"* dan beri centang pada **Pull requests**.
+   * Simpan webhook. Selesai!
+
+---
+
+## 🧪 Menjalankan Pengujian (Testing)
+
+Aplikasi dilengkapi dengan rangkaian pengujian fitur otomatis untuk menjamin integritas transaksi, keamanan, dan alur kerja:
+
+```bash
+php artisan test
+```
+
+---
+
+## 📄 Lisensi (License)
+
+Proyek ini merupakan perangkat lunak sumber terbuka (*open-source software*) yang dilisensikan di bawah lisensi [Apache License, Version 2.0](LICENSE).
+
+Hak Cipta © 2026 **Muhamad Yasir Noval**.
