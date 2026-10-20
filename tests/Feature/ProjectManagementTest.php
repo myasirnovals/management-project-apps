@@ -29,7 +29,7 @@ class ProjectManagementTest extends TestCase
     {
         $response = $this->get('/login');
         $response->assertStatus(200);
-        $response->assertSee('AgilePM Workspace');
+        $response->assertSee('Capstone Project Manager');
         $response->assertDontSee('href="/register"', false);
     }
 

@@ -105,7 +105,7 @@
                 <div class="flex flex-col sm:flex-row items-center justify-between pb-4 border-b border-slate-800 mb-6 gap-3">
                     <div>
                         <h3 class="text-base font-bold text-white">Daftar Proyek &amp; Iterasi Sprint</h3>
-                        <p class="text-xs text-slate-400">Ringkasan proyek aktif dalam workspace AgilePM.</p>
+                        <p class="text-xs text-slate-400">Ringkasan proyek aktif dalam workspace Capstone Project Manager.</p>
                     </div>
                     <span class="px-3 py-1 rounded-xl bg-slate-800 text-slate-300 font-semibold text-xs border border-slate-700">
                         Total Proyek: {{ $projects->count() }}
@@ -238,7 +238,7 @@
                         <h4 class="font-bold text-white text-sm">Buat Kalender Baru di Google Calendar</h4>
                     </div>
                     <p class="text-slate-400 leading-relaxed pl-8">
-                        Buka <a href="https://calendar.google.com" target="_blank" class="text-indigo-400 underline font-semibold">Google Calendar</a> dengan akun utama/bersama. Di sidebar kiri pada bagian <strong>"Kalender lain" (Other calendars)</strong>, klik tanda <strong>+</strong> lalu pilih <strong>"Buat kalender baru" (Create new calendar)</strong>. Beri nama kalender (misal: <em>Jadwal Proyek AgilePM</em>).
+                        Buka <a href="https://calendar.google.com" target="_blank" class="text-indigo-400 underline font-semibold">Google Calendar</a> dengan akun utama/bersama. Di sidebar kiri pada bagian <strong>"Kalender lain" (Other calendars)</strong>, klik tanda <strong>+</strong> lalu pilih <strong>"Buat kalender baru" (Create new calendar)</strong>. Beri nama kalender (misal: <em>Jadwal Proyek CPM</em>).
                     </p>
                 </div>
 
@@ -281,12 +281,12 @@
                 <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">4</span>
-                        <h4 class="font-bold text-white text-sm">Salin ID Kalender ke Aplikasi AgilePM</h4>
+                        <h4 class="font-bold text-white text-sm">Salin ID Kalender ke Aplikasi Capstone Project Manager</h4>
                     </div>
                     <div class="pl-8 space-y-1.5 text-slate-400 leading-relaxed">
                         <p>Di setelan kalender yang sama, gulir ke bawah ke bagian <strong>"Integrasikan kalender" (Integrate calendar)</strong>.</p>
                         <p>Salin <strong>ID Kalender</strong> (formatnya biasanya: <code class="text-indigo-300 bg-slate-900 px-1.5 py-0.5 rounded font-mono">c_xxxxxx@group.calendar.google.com</code> atau email akun bersama).</p>
-                        <p>Di aplikasi AgilePM, klik tombol <strong>⚙️ Setelan Kalender</strong>, tempelkan ID tersebut, lalu simpan.</p>
+                        <p>Di aplikasi Capstone Project Manager, klik tombol <strong>⚙️ Setelan Kalender</strong>, tempelkan ID tersebut, lalu simpan.</p>
                     </div>
                 </div>
             </div>

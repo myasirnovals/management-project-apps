@@ -1,4 +1,4 @@
-# 🚀 AgilePM — Modern Agile Project Management Studio
+# 🚀 Capstone Project Manager (CPM) — Lightweight Agile Studio for Capstone & Student Projects
 
 [![Latest Version](https://img.shields.io/badge/release-v1.4.0-indigo.svg?style=flat-square)](https://github.com/myasirnovals/management-project-apps/releases/tag/v1.4.0)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat-square)](LICENSE)
@@ -6,7 +6,9 @@
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D_8.2-purple.svg?style=flat-square&logo=php)](https://php.net)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.x-38B2AC.svg?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 
-**AgilePM** adalah aplikasi manajemen proyek modern berbasis web yang dirancang khusus untuk memfasilitasi alur kerja metodologi **Agile**, **Scrum**, dan **Kanban**. Dilengkapi dengan otomatisasi **GitHub Webhooks**, pengingat **WhatsApp langsung**, notifikasi email SMTP dinamis, serta sistem kolaborasi tiket (lampiran & diskusi progres) untuk tim pengembang perangkat lunak.
+**Capstone Project Manager (CPM)** adalah aplikasi manajemen proyek terpadu berbasis web yang dirancang khusus untuk memfasilitasi kebutuhan proyek tingkat akhir / *capstone project* mahasiswa, tim riset, dan proyek berskala sedang menggunakan metodologi **Agile**, **Scrum**, dan **Kanban**. 
+
+Aplikasi ini berfokus pada kemudahan kolaborasi, kesederhanaan alur kerja, otomatisasi **GitHub Webhooks**, pengingat **WhatsApp langsung**, notifikasi email SMTP dinamis, pembatasan hak akses peran (**Role-Based Access Control / RBAC**), serta wadah **Kotak Saran & Aspirasi Tim** langsung ke Project Manager tanpa kerumitan konfigurasi tingkat *enterprise* yang membingungkan.
 
 ---
 

@@ -173,7 +173,7 @@
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Pengirim (From Name)</label>
                             <input type="text" name="mail_from_name"
                                 value="{{ old('mail_from_name', $settings['mail_from_name'] ?? '') }}"
-                                placeholder="AgilePM Studio"
+                                placeholder="Capstone Project Studio"
                                 {{ !$isProjectManager ? 'disabled' : '' }}
                                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
                         </div>
@@ -264,7 +264,7 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Aplikasi *</label>
                         <input type="text" name="app_name"
-                            value="{{ old('app_name', $settings['app_name'] ?? 'AgilePM') }}"
+                            value="{{ old('app_name', $settings['app_name'] ?? 'Capstone Project Manager') }}"
                             required
                             {{ !$isProjectManager ? 'disabled' : '' }}
                             class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
@@ -273,7 +273,7 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Organisasi / Studio</label>
                         <input type="text" name="organization_name"
-                            value="{{ old('organization_name', $settings['organization_name'] ?? 'Pro Project Studio') }}"
+                            value="{{ old('organization_name', $settings['organization_name'] ?? 'Capstone Project Studio') }}"
                             {{ !$isProjectManager ? 'disabled' : '' }}
                             class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
                     </div>

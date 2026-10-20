@@ -89,12 +89,12 @@ class AppSettingsController extends Controller
     protected function loadSettings(): array
     {
         $defaultSettings = [
-            'app_name' => 'AgilePM',
-            'organization_name' => 'Pro Project Studio',
+            'app_name' => 'Capstone Project Manager',
+            'organization_name' => 'Capstone Project Studio',
             'default_timezone' => 'Asia/Jakarta',
 
             // Google Calendar
-            'calendar_id' => 'agile-team@group.calendar.google.com',
+            'calendar_id' => 'capstone-team@group.calendar.google.com',
             'calendar_timezone' => 'Asia/Jakarta',
             'calendar_view_mode' => 'MONTH',
             'custom_embed_url' => '',
@@ -107,7 +107,7 @@ class AppSettingsController extends Controller
             'mail_password' => '',
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@project.local',
-            'mail_from_name' => 'AgilePM Notification',
+            'mail_from_name' => 'Capstone Project Manager Notification',
 
             // WhatsApp Gateway
             'whatsapp_gateway_enabled' => false,
