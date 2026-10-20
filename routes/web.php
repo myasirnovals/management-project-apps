@@ -7,6 +7,8 @@ use App\Http\Controllers\BoardController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IssueAttachmentController;
+use App\Http\Controllers\IssueCommentController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReleaseController;
@@ -93,6 +95,13 @@ Route::middleware('auth')->group(function () {
         Route::put('/issues/{issue}', [IssueController::class, 'update'])->name('issues.update');
         Route::delete('/issues/{issue}', [IssueController::class, 'destroy'])->name('issues.destroy');
         Route::post('/issues/{issue}/subtasks', [IssueController::class, 'storeSubtask'])->name('issues.subtasks.store');
+
+        // Issue Attachments & Comments
+        Route::post('/issues/{issue}/attachments', [IssueAttachmentController::class, 'store'])->name('issues.attachments.store');
+        Route::get('/issues/{issue}/attachments/{attachment}/download', [IssueAttachmentController::class, 'download'])->name('issues.attachments.download');
+        Route::delete('/issues/{issue}/attachments/{attachment}', [IssueAttachmentController::class, 'destroy'])->name('issues.attachments.destroy');
+        Route::post('/issues/{issue}/comments', [IssueCommentController::class, 'store'])->name('issues.comments.store');
+        Route::delete('/issues/{issue}/comments/{comment}', [IssueCommentController::class, 'destroy'])->name('issues.comments.destroy');
 
         // Components (Modul I.F)
         Route::get('/components', [ComponentController::class, 'index'])->name('components.index');

@@ -90,6 +90,16 @@ class Issue extends Model
         return $this->belongsTo(ReleaseVersion::class, 'version_id');
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(IssueAttachment::class)->latest();
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(IssueComment::class)->latest();
+    }
+
     /**
      * Scope for Backlog issues (no sprint assigned and not an epic)
      */

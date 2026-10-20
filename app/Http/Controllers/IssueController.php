@@ -74,17 +74,58 @@ class IssueController extends Controller
      */
     public function show(Project $project, Issue $issue): JsonResponse|View
     {
-        $issue->load(['assignee', 'reporter', 'component', 'parent', 'version', 'sprint', 'subtasks.assignee']);
+        $issue->load([
+            'assignee', 
+            'reporter', 
+            'component', 
+            'parent', 
+            'version', 
+            'sprint', 
+            'subtasks.assignee',
+            'attachments.user',
+            'comments.user',
+        ]);
 
         if (request()->wantsJson() || request()->ajax()) {
             $waService = app(\App\Services\WhatsAppService::class);
             $hasAssigneeWa = (bool) ($issue->assignee && $issue->assignee->hasWhatsApp());
+            $currentUserId = Auth::id();
+            $isPm = $this->isProjectManager();
+
+            $attachments = $issue->attachments->map(fn ($att) => [
+                'id' => $att->id,
+                'filename' => $att->filename,
+                'url' => $att->url(),
+                'download_url' => route('projects.issues.attachments.download', [$project, $issue, $att]),
+                'is_image' => $att->isImage(),
+                'file_type' => $att->file_type,
+                'formatted_size' => $att->formattedSize(),
+                'user_name' => $att->user?->name ?? 'User',
+                'user_initials' => $att->user?->initials() ?? 'U',
+                'created_at_human' => $att->created_at->diffForHumans(),
+                'can_delete' => $currentUserId === $att->user_id || $isPm,
+            ]);
+
+            $comments = $issue->comments->map(fn ($com) => [
+                'id' => $com->id,
+                'content' => $com->content,
+                'user_id' => $com->user_id,
+                'user_name' => $com->user?->name ?? 'User',
+                'user_role' => $com->user?->role ?? 'developer',
+                'user_initials' => $com->user?->initials() ?? 'U',
+                'created_at_human' => $com->created_at->diffForHumans(),
+                'can_delete' => $currentUserId === $com->user_id || $isPm,
+            ]);
 
             return response()->json([
                 'issue' => $issue,
                 'type_badge' => $issue->type->badgeClasses(),
                 'status_badge' => $issue->status->badgeClasses(),
                 'priority_badge' => $issue->priority->badgeClasses(),
+                'attachments' => $attachments,
+                'comments' => $comments,
+                'is_pm' => $isPm,
+                'current_user_id' => $currentUserId,
                 'whatsapp' => [
                     'has_phone' => $hasAssigneeWa,
                     'phone' => $issue->assignee?->phone,
