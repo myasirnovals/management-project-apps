@@ -4,7 +4,7 @@
             <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
                 {{ $project->key }}
             </span>
-            <span class="text-sm font-bold text-white">Komponen Proyek (Modul I.F)</span>
+            <span class="text-sm font-bold text-white">Komponen Proyek</span>
         </div>
     </x-slot>
 
