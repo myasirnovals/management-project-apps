@@ -41,7 +41,7 @@ class BoardController extends Controller
         $allSprints = $project->sprints;
 
         // Query issues in current sprint
-        $issuesQuery = Issue::with(['assignee', 'reporter', 'component', 'parent', 'version', 'subtasks'])
+        $issuesQuery = Issue::with(['assignee', 'reporter', 'component', 'parent', 'version', 'subtasks', 'pullRequests'])
             ->where('project_id', $project->id);
 
         if ($currentSprint) {
@@ -136,7 +136,7 @@ class BoardController extends Controller
      */
     public function kanban(Request $request, Project $project): View
     {
-        $issuesQuery = Issue::with(['assignee', 'reporter', 'component', 'parent', 'version'])
+        $issuesQuery = Issue::with(['assignee', 'reporter', 'component', 'parent', 'version', 'pullRequests'])
             ->where('project_id', $project->id)
             ->where('type', '!=', IssueType::EPIC->value);
 

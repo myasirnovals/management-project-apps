@@ -84,6 +84,7 @@ class IssueController extends Controller
             'subtasks.assignee',
             'attachments.user',
             'comments.user',
+            'pullRequests',
         ]);
 
         if (request()->wantsJson() || request()->ajax()) {
@@ -117,6 +118,22 @@ class IssueController extends Controller
                 'can_delete' => $currentUserId === $com->user_id || $isPm,
             ]);
 
+            $pullRequests = $issue->pullRequests->map(fn ($pr) => [
+                'id' => $pr->id,
+                'pr_number' => $pr->pr_number,
+                'title' => $pr->title,
+                'html_url' => $pr->html_url,
+                'state' => $pr->state,
+                'status_label' => $pr->statusLabel(),
+                'status_badge' => $pr->statusBadgeClasses(),
+                'user_username' => $pr->user_username,
+                'user_avatar' => $pr->user_avatar,
+                'branch_head' => $pr->branch_head,
+                'branch_base' => $pr->branch_base,
+                'is_merged' => $pr->is_merged,
+                'created_at_human' => $pr->created_at?->diffForHumans(),
+            ]);
+
             return response()->json([
                 'issue' => $issue,
                 'type_badge' => $issue->type->badgeClasses(),
@@ -124,6 +141,7 @@ class IssueController extends Controller
                 'priority_badge' => $issue->priority->badgeClasses(),
                 'attachments' => $attachments,
                 'comments' => $comments,
+                'pull_requests' => $pullRequests,
                 'is_pm' => $isPm,
                 'current_user_id' => $currentUserId,
                 'whatsapp' => [

@@ -100,6 +100,11 @@ class Issue extends Model
         return $this->hasMany(IssueComment::class)->latest();
     }
 
+    public function pullRequests(): HasMany
+    {
+        return $this->hasMany(GithubPullRequest::class)->orderBy('pr_number', 'desc');
+    }
+
     /**
      * Scope for Backlog issues (no sprint assigned and not an epic)
      */

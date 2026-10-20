@@ -23,7 +23,19 @@ class Project extends Model
         'type', // scrum, kanban
         'owner_id',
         'status',
+        'github_repo',
+        'github_webhook_secret',
+        'github_auto_move_pr',
+        'github_auto_close_pr',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'github_auto_move_pr' => 'boolean',
+            'github_auto_close_pr' => 'boolean',
+        ];
+    }
 
     protected static function booted(): void
     {
@@ -104,6 +116,26 @@ class Project extends Model
     public function epics(): HasMany
     {
         return $this->hasMany(Issue::class)->where('type', IssueType::EPIC->value);
+    }
+
+    public function pullRequests(): HasMany
+    {
+        return $this->hasMany(GithubPullRequest::class)->orderBy('pr_number', 'desc');
+    }
+
+    public function hasGithubIntegration(): bool
+    {
+        return !empty($this->github_repo);
+    }
+
+    public function generateWebhookSecret(): string
+    {
+        return bin2hex(random_bytes(24));
+    }
+
+    public function getGithubWebhookUrl(): string
+    {
+        return url("/api/projects/{$this->code}/github/webhook");
     }
 
     /**

@@ -7,6 +7,8 @@ use App\Http\Controllers\BoardController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GitHubIntegrationController;
+use App\Http\Controllers\GitHubWebhookController;
 use App\Http\Controllers\IssueAttachmentController;
 use App\Http\Controllers\IssueCommentController;
 use App\Http\Controllers\IssueController;
@@ -123,5 +125,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/velocity', [ReportController::class, 'velocity'])->name('reports.velocity');
         Route::get('/reports/cfd', [ReportController::class, 'cumulativeFlow'])->name('reports.cfd');
         Route::get('/reports/epic', [ReportController::class, 'epic'])->name('reports.epic');
+
+        // GitHub Integration (Per-Project)
+        Route::get('/github', [GitHubIntegrationController::class, 'index'])->name('github.index');
+        Route::post('/github', [GitHubIntegrationController::class, 'update'])->name('github.update');
+        Route::post('/github/regenerate-secret', [GitHubIntegrationController::class, 'regenerateSecret'])->name('github.regenerateSecret');
+        Route::delete('/github', [GitHubIntegrationController::class, 'disconnect'])->name('github.disconnect');
+        Route::post('/github/simulate', [GitHubIntegrationController::class, 'simulate'])->name('github.simulate');
     });
 });
+
+// GitHub Webhook Endpoints (Public webhook receivers for GitHub events)
+Route::post('/api/projects/{project}/github/webhook', [GitHubWebhookController::class, 'handleProject'])
+    ->name('api.github.webhook.project');
+Route::post('/api/github/webhook', [GitHubWebhookController::class, 'handleGlobal'])
+    ->name('api.github.webhook.global');
+

@@ -25,6 +25,50 @@
         window['currentIssueId_' + prefix] = data.issue.id;
         window['currentProjectCode_' + prefix] = projectCode;
 
+        // Render GitHub Pull Requests
+        const prs = data.pull_requests || [];
+        const githubSection = document.getElementById(prefix + '_github_section');
+        const prsContainer = document.getElementById(prefix + '_prs_container');
+        const prsCount = document.getElementById(prefix + '_prs_count');
+
+        if (githubSection && prsContainer) {
+            if (prs.length > 0) {
+                githubSection.classList.remove('hidden');
+                if (prsCount) prsCount.innerText = prs.length;
+                prsContainer.innerHTML = '';
+                prs.forEach(pr => {
+                    const prCard = document.createElement('div');
+                    prCard.className = 'p-3 bg-slate-950/70 border border-slate-800 rounded-xl flex items-center justify-between gap-3 hover:border-slate-700 transition';
+                    prCard.innerHTML = `
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${pr.status_badge}">
+                                ${escapeHtml(pr.status_label)}
+                            </span>
+                            <div class="min-w-0">
+                                <a href="${escapeHtml(pr.html_url)}" target="_blank" class="text-xs font-bold text-white hover:text-indigo-300 transition truncate block">
+                                    #${pr.pr_number} ${escapeHtml(pr.title)}
+                                </a>
+                                <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                                    <span>oleh <strong>@${escapeHtml(pr.user_username || 'developer')}</strong></span>
+                                    <span>•</span>
+                                    <span class="font-mono bg-slate-900 px-1 rounded">${escapeHtml(pr.branch_head || '')} &rarr; ${escapeHtml(pr.branch_base || '')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="${escapeHtml(pr.html_url)}" target="_blank" class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 shrink-0 flex items-center gap-1 bg-indigo-500/10 px-2.5 py-1 rounded-lg">
+                            <span>GitHub</span>
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    `;
+                    prsContainer.appendChild(prCard);
+                });
+            } else {
+                githubSection.classList.add('hidden');
+            }
+        }
+
         // Render Attachments
         const attachments = data.attachments || [];
         const attContainer = document.getElementById(prefix + '_attachments_container');
