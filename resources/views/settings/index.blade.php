@@ -177,6 +177,8 @@
                                 {{ !$isProjectManager ? 'disabled' : '' }}
                                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
                         </div>
+                    </div>
+                </div>
             </div>
 
             <!-- SECTION 3: WHATSAPP GATEWAY & AUTOMATION -->
