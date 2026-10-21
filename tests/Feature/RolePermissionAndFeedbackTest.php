@@ -242,4 +242,52 @@ class RolePermissionAndFeedbackTest extends TestCase
             'story_points' => 5,
         ]);
     }
+
+    /**
+     * Test role-adaptive dashboard display for Project Manager.
+     */
+    public function test_dashboard_adapts_for_project_manager(): void
+    {
+        ProjectFeedback::create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->developer->id,
+            'title' => 'Fitur Baru Testing PM',
+            'description' => 'Deskripsi testing feedback',
+            'category' => 'feature_request',
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($this->pm)->get('/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('Selamat Datang, ' . $this->pm->name);
+        $response->assertSee('Role: Project Manager');
+        $response->assertSee('Buat Proyek Baru');
+        $response->assertSee('Tinjau Kotak Saran');
+        $response->assertSee('Kotak Saran Tim Memerlukan Tindakan');
+    }
+
+    /**
+     * Test role-adaptive dashboard display for Developer.
+     */
+    public function test_dashboard_adapts_for_developer(): void
+    {
+        $response = $this->actingAs($this->developer)->get('/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('Selamat Datang, ' . $this->developer->name);
+        $response->assertSee('Role: Developer');
+        $response->assertSee('Tugas Saya di Sprint Aktif');
+        $response->assertDontSee('Buat Proyek Baru');
+    }
+
+    /**
+     * Test role-adaptive dashboard display for Viewer.
+     */
+    public function test_dashboard_adapts_for_viewer(): void
+    {
+        $response = $this->actingAs($this->viewer)->get('/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('Selamat Datang, ' . $this->viewer->name);
+        $response->assertSee('Role: Viewer');
+        $response->assertDontSee('Buat Proyek Baru');
+    }
 }
