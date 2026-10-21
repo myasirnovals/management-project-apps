@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Models\ProjectFeedback;
 use App\Models\ReleaseVersion;
 use App\Models\Sprint;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -18,6 +19,7 @@ class DashboardController extends Controller
 {
     public function index(Request $request): View
     {
+        /** @var User $user */
         $user = Auth::user();
 
         // Projects the user owns or belongs to
