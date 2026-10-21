@@ -164,7 +164,7 @@ Route::middleware('auth')->group(function () {
         // Kotak Saran & Masukan Tim (Feature Requests & Improvements)
         Route::get('/feedback', [ProjectFeedbackController::class, 'index'])->name('feedback.index');
         Route::post('/feedback', [ProjectFeedbackController::class, 'store'])->name('feedback.store');
-        Route::patch('/feedback/{feedback}', [ProjectFeedbackController::class, 'updateResponse'])->name('feedback.response');
+        Route::match(['put', 'patch'], '/feedback/{feedback}', [ProjectFeedbackController::class, 'updateResponse'])->name('feedback.response');
         Route::post('/feedback/{feedback}/convert', [ProjectFeedbackController::class, 'convertToIssue'])->name('feedback.convert');
         Route::delete('/feedback/{feedback}', [ProjectFeedbackController::class, 'destroy'])->name('feedback.destroy');
     });

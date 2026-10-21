@@ -149,18 +149,29 @@
 
     <!-- Feedbacks List -->
     @if($feedbacks->isEmpty())
-        <div class="py-16 text-center rounded-2xl bg-slate-900/50 border border-slate-800/80">
-            <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        <div class="relative text-center rounded-3xl bg-slate-900/50 border border-slate-800/80 shadow-xl overflow-hidden py-20 px-6 sm:px-10" style="padding-top: 5rem; padding-bottom: 5rem; padding-left: 1.5rem; padding-right: 1.5rem;">
+            <!-- Ambient Glow Background -->
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-96 h-40 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Icon Badge -->
+            <div class="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-transparent text-indigo-400 border border-indigo-500/30 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-500/10">
+                <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
             </div>
-            <h3 class="text-base font-bold text-white mb-1">Belum Ada Saran atau Masukan</h3>
-            <p class="text-xs text-slate-400 max-w-sm mx-auto mb-6">
-                Jadilah yang pertama menyampaikan ide fitur atau masukan untuk pengembangan proyek ini kepada Project Manager.
+
+            <!-- Title & Subtitle -->
+            <h3 class="relative text-xl font-bold text-white mb-2 tracking-tight">Belum Ada Saran atau Masukan</h3>
+            <p class="relative text-sm text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
+                Jadilah yang pertama menyampaikan ide fitur baru, usulan peningkatan, atau masukan untuk pengembangan proyek ini kepada Project Manager.
             </p>
+
+            <!-- Action Button -->
             <button type="button" onclick="document.getElementById('modal-new-feedback').classList.remove('hidden')"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">
+                class="relative inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-xl shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98] transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
                 <span>Kirim Masukan Pertama</span>
             </button>
         </div>
@@ -248,7 +259,11 @@
                             @if($isProjectManager)
                                 <!-- PM Edit Response Button -->
                                 <button type="button"
-                                    onclick="openResponseModal({{ $fb->id }}, '{{ addslashes($fb->title) }}', '{{ $fb->status }}', '{{ addslashes($fb->pm_response ?? '') }}')"
+                                    data-id="{{ $fb->id }}"
+                                    data-title="{{ $fb->title }}"
+                                    data-status="{{ $fb->status }}"
+                                    data-notes="{{ $fb->pm_response ?? '' }}"
+                                    onclick="openResponseModal(this)"
                                     class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition border border-slate-700 flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -421,12 +436,25 @@
 </div>
 
 <script>
-    function openResponseModal(id, title, status, notes) {
+    function openResponseModal(target, title, status, notes) {
+        let id, fbTitle, fbStatus, fbNotes;
+        if (target instanceof HTMLElement) {
+            id = target.getAttribute('data-id');
+            fbTitle = target.getAttribute('data-title');
+            fbStatus = target.getAttribute('data-status');
+            fbNotes = target.getAttribute('data-notes') || '';
+        } else {
+            id = target;
+            fbTitle = title;
+            fbStatus = status;
+            fbNotes = notes || '';
+        }
+
         const form = document.getElementById('form-pm-response');
         form.action = `/projects/{{ $project->id }}/feedback/${id}`;
-        document.getElementById('resp-feedback-title').textContent = title;
-        document.getElementById('resp-status').value = status;
-        document.getElementById('resp-notes').value = notes;
+        document.getElementById('resp-feedback-title').textContent = fbTitle;
+        document.getElementById('resp-status').value = fbStatus;
+        document.getElementById('resp-notes').value = fbNotes;
         document.getElementById('modal-pm-response').classList.remove('hidden');
     }
 </script>
