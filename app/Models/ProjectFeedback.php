@@ -84,11 +84,11 @@ class ProjectFeedback extends Model
     public function categoryBadgeClass(): string
     {
         return match ($this->category) {
-            'feature_request' => 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
-            'improvement' => 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-            'bug_report' => 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
-            'general' => 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-            default => 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
+            'feature_request' => 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800',
+            'improvement' => 'bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800',
+            'bug_report' => 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800',
+            'general' => 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800',
+            default => 'bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600',
         };
     }
 
@@ -113,12 +113,12 @@ class ProjectFeedback extends Model
     public function statusBadgeClass(): string
     {
         return match ($this->status) {
-            'pending' => 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
-            'reviewed' => 'bg-blue-500/15 text-blue-300 border border-blue-500/30',
-            'planned' => 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30',
-            'rejected' => 'bg-rose-500/15 text-rose-300 border border-rose-500/30',
-            'implemented' => 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
-            default => 'bg-slate-500/15 text-slate-300 border border-slate-500/30',
+            'pending' => 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800',
+            'reviewed' => 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800',
+            'planned' => 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800',
+            'rejected' => 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800',
+            'implemented' => 'bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800',
+            default => 'bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600',
         };
     }
 }

@@ -1,439 +1,414 @@
+@php
+    $authUser = Auth::user();
+    $isPm = $authUser->isProjectManager();
+    $isAdminArea = request()->routeIs('admin.*', 'users.*', 'app.settings*', 'projects.create', 'projects.edit');
+    $activeProject = ($project ?? $currentProject ?? null);
+    if ($activeProject instanceof \App\Models\Project) {
+        $activeProject->loadMissing(['components', 'sprints', 'versions', 'epics', 'members']);
+    } else {
+        $activeProject = null;
+    }
+    $navProjects = $navProjects ?? collect();
+    $showTopbarCreateIssue = $activeProject
+        && !$isAdminArea
+        && $authUser->canMutateIssues()
+        && request()->routeIs('projects.board', 'projects.kanban', 'projects.backlog');
+    $brandMonogram = collect(explode(' ', $appBrandName ?? 'Capstone Project Manager'))
+        ->filter()
+        ->take(3)
+        ->map(fn ($w) => strtoupper(substr($w, 0, 1)))
+        ->implode('') ?: 'CPM';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-950">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="color-scheme" content="light dark">
+    <script>
+        try {
+            var savedScheme = localStorage.getItem('color-scheme');
+            if (savedScheme === 'light' || savedScheme === 'dark') {
+                document.querySelector('meta[name="color-scheme"]').content = savedScheme;
+            }
+        } catch (e) {}
+    </script>
 
-    <title>{{ $title ?? 'Workspace' }} - {{ config('app.name', 'Capstone Project Manager') }}</title>
+    <title>{{ isset($title) ? $title . ' - ' : '' }}{{ $appBrandName ?? config('app.name', 'Capstone Project Manager') }}</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-    </style>
 </head>
-<body class="h-full bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white flex overflow-hidden">
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased flex flex-col overflow-hidden">
 
-    <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 select-none z-20">
-        <!-- Brand & Logo -->
-        <div class="h-16 flex items-center gap-3 px-5 border-b border-slate-800">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition font-black tracking-wider text-xs border border-white/10 shrink-0">
-                    CPM
-                </div>
-                <div class="min-w-0">
-                    <span class="font-bold text-sm tracking-tight text-white block leading-tight truncate">Capstone Project Manager</span>
-                    <span class="text-[10px] text-indigo-400 uppercase tracking-widest block font-semibold">CPM Studio</span>
-                </div>
+    <!-- Global Topbar -->
+    <header class="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 sm:px-5 flex items-center justify-between gap-2 shrink-0 z-20">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button type="button" command="show-modal" commandfor="mobileSidebarDialog"
+                class="lg:hidden inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                aria-label="Buka menu navigasi">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            <a href="{{ $isAdminArea && $isPm ? route('admin.index') : route('dashboard') }}" class="flex items-center gap-2 min-w-0 shrink-0">
+                <span class="inline-flex items-center justify-center px-2 py-1 rounded-md bg-blue-700 text-white font-mono text-xs font-bold tracking-tight">
+                    {{ $brandMonogram }}
+                </span>
+                <span class="hidden md:inline font-bold text-sm text-slate-900 dark:text-white truncate max-w-48">
+                    {{ $appBrandName ?? 'Capstone Project Manager' }}
+                </span>
             </a>
-        </div>
 
-        <!-- Project Selector / Context -->
-        @php
-            $currentProject = isset($project) ? $project : (request()->route('project') instanceof \App\Models\Project ? request()->route('project') : (is_string(request()->route('project')) ? \App\Models\Project::where('code', request()->route('project'))->orWhere('id', is_numeric(request()->route('project')) ? request()->route('project') : 0)->first() : null));
-            $allProjectsList = \App\Models\Project::orderBy('name')->get();
-        @endphp
+            <span class="hidden sm:block h-5 w-px bg-slate-200 dark:bg-slate-700" aria-hidden="true"></span>
 
-        @if($currentProject)
-            <div class="p-3 mx-3 my-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Proyek Aktif</div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <span class="w-6 h-6 rounded-md bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold text-xs flex items-center justify-center shrink-0">
-                            {{ $currentProject->key }}
-                        </span>
-                        <span class="text-xs font-semibold text-slate-200 truncate">{{ $currentProject->name }}</span>
-                    </div>
-                </div>
-                <a href="{{ route('dashboard') }}" class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center gap-1.5 text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition group">
-                    <svg class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    <span>Kembali ke Dashboard</span>
-                </a>
-            </div>
-        @endif
-
-        <!-- Navigation Links -->
-        <div class="flex-1 overflow-y-auto px-3 py-2 space-y-6">
-            @if($currentProject)
-                <!-- Project Planning Section -->
-                <div>
-                    <div class="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Papan & Perencanaan
-                    </div>
-                    <nav class="space-y-1">
-                        <a href="{{ route('projects.board', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.board') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-                            </svg>
-                            <span>Scrum Board</span>
-                        </a>
-
-                        <a href="{{ route('projects.kanban', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.kanban') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-                            </svg>
-                            <span>Kanban Board</span>
-                        </a>
-
-                        <a href="{{ route('projects.backlog', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.backlog') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                            <span>Backlog Management</span>
-                        </a>
-
-                        <a href="{{ route('projects.timeline', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.timeline*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Waktu Proyek</span>
-                        </a>
-                    </nav>
-                </div>
-
-                <!-- Project Tracking Section -->
-                <div>
-                    <div class="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Artefak & Pelaporan
-                    </div>
-                    <nav class="space-y-1">
-                        <a href="{{ route('projects.components.index', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.components.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                            <span>Komponen</span>
-                        </a>
-
-                        <a href="{{ route('projects.releases.index', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.releases.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
-                            <span>Rilis & Versi</span>
-                        </a>
-
-                        <a href="{{ route('projects.reports.index', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.reports.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            <span>Laporan Agile</span>
-                        </a>
-
-                        <a href="{{ route('projects.feedback.index', $currentProject) }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.feedback.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                            </svg>
-                            <span>Saran & Masukan</span>
-                        </a>
-
-                        <a href="{{ route('projects.github.index', $currentProject) }}"
-                            class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.github.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-                                </svg>
-                                <span>GitHub & PR</span>
-                            </div>
-                            @if($currentProject->hasGithubIntegration())
-                                <span class="w-2 h-2 rounded-full bg-emerald-400" title="GitHub Terhubung"></span>
-                            @endif
-                        </a>
-
-                        @if(Auth::user()->isProjectManager())
-                            <a href="{{ route('projects.edit', $currentProject) }}"
-                                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.edit') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span>Pengaturan Proyek</span>
-                            </a>
-                        @endif
-                    </nav>
-                </div>
+            @if($isPm)
+                <nav aria-label="Area Kerja" class="inline-flex items-center rounded-lg p-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <a href="{{ $activeProject && !$isAdminArea ? ($activeProject->type === 'kanban' ? route('projects.kanban', $activeProject) : route('projects.board', $activeProject)) : route('dashboard') }}"
+                        class="px-2.5 py-1.5 min-h-9 inline-flex items-center rounded-md text-xs font-semibold transition-colors {{ !$isAdminArea ? 'bg-white dark:bg-slate-900 text-blue-800 dark:text-blue-200 shadow-2xs' : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                        Workspace Proyek
+                    </a>
+                    <a href="{{ route('admin.index') }}"
+                        class="px-2.5 py-1.5 min-h-9 inline-flex items-center rounded-md text-xs font-semibold transition-colors {{ $isAdminArea ? 'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 shadow-2xs' : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                        Panel Admin
+                    </a>
+                </nav>
             @else
-                <!-- Global Workspace Section -->
-                <div>
-                    <div class="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Workspace Utama
+                <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    Workspace Proyek
+                </span>
+            @endif
+
+            @if(!$isAdminArea && $navProjects->isNotEmpty())
+                <details class="relative hidden xl:block">
+                    <summary class="list-none inline-flex items-center gap-1.5 px-2.5 py-1.5 min-h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 cursor-pointer select-none">
+                        <span class="truncate max-w-44">
+                            {{ $activeProject ? $activeProject->key . ' : ' . $activeProject->name : 'Pindah Proyek' }}
+                        </span>
+                        <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </summary>
+                    <div class="absolute left-0 mt-1.5 w-64 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg py-1.5 z-30">
+                        <div class="px-3 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Pilih Proyek</div>
+                        <div class="max-h-64 overflow-y-auto">
+                            @foreach($navProjects as $p)
+                                <a href="{{ $p->type === 'kanban' ? route('projects.kanban', $p) : route('projects.board', $p) }}"
+                                    class="flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 {{ $activeProject && $activeProject->id === $p->id ? 'font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/40' : 'text-slate-800 dark:text-slate-200' }}">
+                                    <span class="font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600">{{ $p->key }}</span>
+                                    <span class="truncate">{{ $p->name }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                        <div class="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 px-2">
+                            <a href="{{ route('dashboard') }}" class="block px-2 py-1.5 rounded-md text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                                Lihat Semua di Dashboard
+                            </a>
+                        </div>
                     </div>
-                    <nav class="space-y-1">
-                        <a href="{{ route('dashboard') }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            <span>Dashboard</span>
-                        </a>
-
-                        <a href="{{ route('calendar.index') }}"
-                            class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('calendar.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span>Kalender Proyek</span>
-                        </a>
-
-                        @if(Auth::user()->isProjectManager())
-                            <a href="{{ route('users.index') }}"
-                                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('users.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                                <span>Kelola Tim & Anggota</span>
-                            </a>
-
-                            <a href="{{ route('app.settings') }}"
-                                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('app.settings*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span>Pengaturan Aplikasi</span>
-                            </a>
-                        @endif
-                    </nav>
-                </div>
+                </details>
             @endif
         </div>
 
-        <!-- User Profile & Logout -->
-        <div class="p-3 border-t border-slate-800 bg-slate-900/80">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs ring-2 ring-indigo-500/30 shrink-0">
-                        {{ Auth::user()->initials() }}
-                    </div>
-                    <div class="min-w-0">
-                        <div class="text-xs font-semibold text-white truncate">{{ Auth::user()->name }}</div>
-                        <div class="text-[10px] text-slate-400 truncate">{{ Auth::user()->role->label() }}</div>
-                    </div>
-                </div>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" title="Logout" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main Container -->
-    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <!-- Top Header Bar -->
-        <header class="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between shrink-0 z-10">
-            <!-- Left: Breadcrumb / Title -->
-            <div class="flex items-center gap-4">
-                <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                    {{ $header ?? 'Workspace' }}
-                </h1>
-            </div>
-
-            <!-- Right: Actions & Quick Create Button -->
-            <div class="flex items-center gap-3">
-                @isset($headerActions)
-                    {{ $headerActions }}
-                @endisset
-
-                @if($currentProject && Auth::user()->canMutateIssues())
-                    <!-- Fast "+ Buat Issue" Jira Style Button -->
-                    <button type="button" onclick="openCreateIssueModal()"
-                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Buat Issue</span>
-                    </button>
-                @endif
-            </div>
-        </header>
-
-        <!-- Flash Notifications -->
-        @if(session('success'))
-            <div class="mx-6 mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        <div class="flex items-center gap-2 shrink-0">
+            @if($showTopbarCreateIssue)
+                <button type="button" command="show-modal" commandfor="createIssueModal"
+                    class="btn-primary !py-1.5 !px-3 !text-xs">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-300">&times;</button>
-            </div>
-        @endif
+                    <span>Buat Issue</span>
+                </button>
+            @endif
 
-        @if(session('error'))
-            <div class="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <button type="button" onclick="toggleColorScheme()"
+                class="inline-flex items-center justify-center min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer"
+                title="Ubah tema terang atau gelap">
+                <span class="dark:hidden inline-flex items-center">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                     </svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-300">&times;</button>
-            </div>
-        @endif
+                    <span class="sr-only">Ubah ke tema gelap</span>
+                </span>
+                <span class="hidden dark:inline-flex items-center">
+                    <svg class="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span class="sr-only">Ubah ke tema terang</span>
+                </span>
+            </button>
 
-        <!-- Main Body Content -->
-        <main class="flex-1 overflow-y-auto bg-slate-950 p-6">
-            {{ $slot }}
-        </main>
-    </div>
-
-    <!-- Global Modal: Create Issue (Jira Navbar Style - Gambar 2.9) -->
-    @if($currentProject)
-    <div id="createIssueModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
-                <div>
-                    <h3 class="text-lg font-bold text-white">Buat Issue Baru</h3>
-                    <p class="text-xs text-slate-400">Proyek: <strong class="text-indigo-400">{{ $currentProject->name }} ({{ $currentProject->key }})</strong></p>
-                </div>
-                <button type="button" onclick="closeCreateIssueModal()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+            <div class="hidden md:flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold {{ $authUser->role->badgeColor() }}">
+                    Role: {{ $authUser->role->label() }}
+                </span>
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold shrink-0" title="{{ $authUser->name }}">
+                    {{ $authUser->initials() }}
+                </span>
             </div>
 
-            <form method="POST" action="{{ route('projects.issues.store', $currentProject) }}" class="space-y-4">
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
-
-                <!-- Issue Type -->
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Tipe Issue *</label>
-                    <select name="type" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="story">📘 Story (User Requirement)</option>
-                        <option value="task" selected>☑️ Task (Pekerjaan Teknis)</option>
-                        <option value="bug">🐞 Bug (Masalah / Defect)</option>
-                        <option value="epic">⚡ Epic (Wadah Inisiatif Besar)</option>
-                    </select>
-                </div>
-
-                <!-- Title / Summary -->
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Summary / Judul Issue *</label>
-                    <input type="text" name="title" required placeholder="Ringkasan tugas atau fitur yang ingin dibuat..."
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Deskripsi Lengkap</label>
-                    <textarea name="description" rows="3" placeholder="Jelaskan kebutuhan, kriteria pengujian, atau konteks..."
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Priority -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Prioritas</label>
-                        <select name="priority" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="highest">🔴 Highest</option>
-                            <option value="high">🟠 High</option>
-                            <option value="medium" selected>🟡 Medium</option>
-                            <option value="low">🔵 Low</option>
-                            <option value="lowest">⚪ Lowest</option>
-                        </select>
-                    </div>
-
-                    <!-- Story Points (Estimasi) -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Story Points (Estimasi)</label>
-                        <input type="number" name="story_points" min="0" max="100" placeholder="e.g. 1, 2, 3, 5, 8"
-                            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Assignee -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Penerima Tugas (Assignee)</label>
-                        <select name="assignee_id" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Belum Ditugaskan (Unassigned) --</option>
-                            @foreach($currentProject->members as $member)
-                                <option value="{{ $member->id }}">{{ $member->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Component -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Komponen</label>
-                        <select name="component_id" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Tanpa Komponen --</option>
-                            @foreach($currentProject->components as $component)
-                                <option value="{{ $component->id }}">{{ $component->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Target Sprint / Backlog -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Tempatkan Pada</label>
-                        <select name="sprint_id" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Backlog Proyek</option>
-                            @foreach($currentProject->sprints as $sprint)
-                                <option value="{{ $sprint->id }}">{{ $sprint->name }} ({{ $sprint->status->label() }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Fix Version -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Fix Version (Rilis)</label>
-                        <select name="version_id" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Tanpa Versi --</option>
-                            @foreach($currentProject->versions as $v)
-                                <option value="{{ $v->id }}">{{ $v->name }} ({{ $v->status->label() }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                    <button type="button" onclick="closeCreateIssueModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                        Buat Issue
-                    </button>
-                </div>
+                <button type="submit" title="Keluar dari sesi"
+                    class="inline-flex items-center gap-1.5 min-h-11 sm:min-h-9 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-700 dark:hover:text-rose-200 border border-transparent hover:border-rose-200 dark:hover:border-rose-800 cursor-pointer transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span class="hidden sm:inline">Keluar</span>
+                </button>
             </form>
         </div>
+    </header>
+
+    <!-- Body Shell -->
+    <div class="flex-1 flex min-h-0 overflow-hidden">
+        <!-- Desktop Contextual Sidebar -->
+        <aside class="hidden lg:flex lg:w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col shrink-0">
+            @include('layouts.partials.sidebar-nav', [
+                'isAdminArea' => $isAdminArea,
+                'isPm' => $isPm,
+                'activeProject' => $activeProject,
+                'navProjects' => $navProjects,
+            ])
+        </aside>
+
+        <!-- Main Workspace Content -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+            @if(isset($header) || isset($headerActions))
+                <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    @isset($header)
+                        <div class="min-w-0">
+                            <h1 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight flex flex-wrap items-center gap-2">
+                                {{ $header }}
+                            </h1>
+                        </div>
+                    @endisset
+
+                    @isset($headerActions)
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            {{ $headerActions }}
+                        </div>
+                    @endisset
+                </div>
+            @endif
+
+            <!-- Unified Flash Notifications -->
+            <div class="px-4 sm:px-6 space-y-2 empty:hidden pt-4 empty:pt-0">
+                @if(session('success'))
+                    <div role="status" class="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-sm flex items-center justify-between gap-3">
+                        <span>{{ session('success') }}</span>
+                        <button type="button" onclick="this.parentElement.remove()" class="min-h-8 min-w-8 inline-flex items-center justify-center rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900 cursor-pointer" aria-label="Tutup notifikasi">&times;</button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div role="alert" class="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-sm flex items-center justify-between gap-3">
+                        <span>{{ session('error') }}</span>
+                        <button type="button" onclick="this.parentElement.remove()" class="min-h-8 min-w-8 inline-flex items-center justify-center rounded-md hover:bg-rose-100 dark:hover:bg-rose-900 cursor-pointer" aria-label="Tutup peringatan">&times;</button>
+                    </div>
+                @endif
+
+                @if(session('warning'))
+                    <div role="alert" class="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-sm flex items-center justify-between gap-3">
+                        <span>{{ session('warning') }}</span>
+                        <button type="button" onclick="this.parentElement.remove()" class="min-h-8 min-w-8 inline-flex items-center justify-center rounded-md hover:bg-amber-100 dark:hover:bg-amber-900 cursor-pointer" aria-label="Tutup peringatan">&times;</button>
+                    </div>
+                @endif
+
+                @if(session('info'))
+                    <div role="status" class="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-200 text-sm flex items-center justify-between gap-3">
+                        <span>{{ session('info') }}</span>
+                        <button type="button" onclick="this.parentElement.remove()" class="min-h-8 min-w-8 inline-flex items-center justify-center rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer" aria-label="Tutup informasi">&times;</button>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div role="alert" class="p-3.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-sm">
+                        <div class="font-semibold mb-1">Periksa kembali isian formulir:</div>
+                        <ul class="list-disc list-inside space-y-0.5 text-xs">
+                            @foreach($errors->all() as $err)
+                                <li>{{ $err }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+
+            <main class="flex-1 p-4 sm:p-6">
+                {{ $slot }}
+            </main>
+        </div>
     </div>
+
+    <!-- Mobile Navigation Drawer (<dialog>) -->
+    <dialog id="mobileSidebarDialog" class="dialog-drawer lg:hidden" closedby="any" aria-label="Menu Navigasi">
+        <div class="flex flex-col h-full bg-white dark:bg-slate-900">
+            <div class="h-14 px-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+                <div class="min-w-0">
+                    <div class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ $authUser->name }}</div>
+                    <div class="text-xs text-slate-600 dark:text-slate-300">Role: {{ $authUser->role->label() }}</div>
+                </div>
+                <button type="button" command="close" commandfor="mobileSidebarDialog"
+                    class="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                    aria-label="Tutup menu navigasi">
+                    &times;
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                @include('layouts.partials.sidebar-nav', [
+                    'isAdminArea' => $isAdminArea,
+                    'isPm' => $isPm,
+                    'activeProject' => $activeProject,
+                    'navProjects' => $navProjects,
+                ])
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Contextual Create Issue Modal (<dialog>) -->
+    @if($activeProject && $authUser->canMutateIssues())
+        <dialog id="createIssueModal" closedby="any" aria-labelledby="createIssueModalTitle">
+            <div class="p-5 sm:p-6">
+                <div class="flex items-start justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-700 mb-4">
+                    <div>
+                        <h2 id="createIssueModalTitle" class="text-base font-bold text-slate-900 dark:text-white">Buat Issue Baru</h2>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                            Proyek: <span class="font-semibold">{{ $activeProject->name }}</span> (<span class="font-mono">{{ $activeProject->key }}</span>)
+                        </p>
+                    </div>
+                    <button type="button" command="close" commandfor="createIssueModal"
+                        class="min-h-10 min-w-10 inline-flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        aria-label="Tutup dialog">
+                        &times;
+                    </button>
+                </div>
+
+                <form method="POST" action="{{ route('projects.issues.store', $activeProject) }}" class="space-y-4">
+                    @csrf
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="create_issue_type" class="form-label">Tipe Issue *</label>
+                            <select id="create_issue_type" name="type" required class="form-select">
+                                <option value="task" selected>Task (Pekerjaan Teknis)</option>
+                                <option value="story">Story (Kebutuhan Pengguna)</option>
+                                <option value="bug">Bug (Perbaikan Masalah)</option>
+                                <option value="epic">Epic (Inisiatif Besar)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="create_issue_priority" class="form-label">Prioritas</label>
+                            <select id="create_issue_priority" name="priority" class="form-select">
+                                <option value="highest">Highest</option>
+                                <option value="high">High</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="low">Low</option>
+                                <option value="lowest">Lowest</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="create_issue_title" class="form-label">Judul / Ringkasan Issue *</label>
+                        <input id="create_issue_title" type="text" name="title" required
+                            placeholder="Contoh: Validasi stok barang saat kasir menyimpan transaksi"
+                            class="form-input">
+                    </div>
+
+                    <div>
+                        <label for="create_issue_desc" class="form-label">Deskripsi</label>
+                        <textarea id="create_issue_desc" name="description" rows="3"
+                            placeholder="Uraikan kebutuhan fungsional, langkah reproduksi, atau kriteria selesai..."
+                            class="form-input"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="create_issue_assignee" class="form-label">Penerima Tugas (Assignee)</label>
+                            <select id="create_issue_assignee" name="assignee_id" class="form-select">
+                                <option value="">Belum Ditugaskan</option>
+                                @foreach($activeProject->members as $member)
+                                    <option value="{{ $member->id }}">{{ $member->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="create_issue_points" class="form-label">Story Points</label>
+                            <input id="create_issue_points" type="number" name="story_points" min="0" max="100"
+                                placeholder="Contoh: 1, 2, 3, 5, 8"
+                                class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="create_issue_sprint" class="form-label">Tempatkan Pada</label>
+                            <select id="create_issue_sprint" name="sprint_id" class="form-select">
+                                <option value="">Backlog Proyek</option>
+                                @foreach($activeProject->sprints as $sprint)
+                                    @if($sprint->status->value !== 'completed')
+                                        <option value="{{ $sprint->id }}">{{ $sprint->name }} ({{ $sprint->status->label() }})</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="create_issue_due" class="form-label">Tenggat Waktu</label>
+                            <input id="create_issue_due" type="date" name="due_date" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="create_issue_epic" class="form-label">Induk Epic</label>
+                            <select id="create_issue_epic" name="parent_id" class="form-select">
+                                <option value="">Tanpa Epic</option>
+                                @foreach($activeProject->epics as $epic)
+                                    <option value="{{ $epic->id }}">{{ $epic->issue_key }} - {{ \Illuminate\Support\Str::limit($epic->title, 28) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="create_issue_component" class="form-label">Komponen</label>
+                            <select id="create_issue_component" name="component_id" class="form-select">
+                                <option value="">Tanpa Komponen</option>
+                                @foreach($activeProject->components as $component)
+                                    <option value="{{ $component->id }}">{{ $component->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="create_issue_version" class="form-label">Versi Rilis</label>
+                            <select id="create_issue_version" name="version_id" class="form-select">
+                                <option value="">Tanpa Versi</option>
+                                @foreach($activeProject->versions as $ver)
+                                    <option value="{{ $ver->id }}">{{ $ver->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <button type="button" command="close" commandfor="createIssueModal" class="btn-secondary">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            Simpan Issue
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
     @endif
-
-    <script>
-        function openCreateIssueModal() {
-            const modal = document.getElementById('createIssueModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeCreateIssueModal() {
-            const modal = document.getElementById('createIssueModal');
-            if (modal) modal.classList.add('hidden');
-        }
-    </script>
 </body>
 </html>

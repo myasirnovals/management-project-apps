@@ -132,9 +132,8 @@ class GitHubWebhookService
 
         // Apply automations to linked issue
         if ($linkedIssue) {
-            // Automation 1: Move to IN_REVIEW when PR is opened or synchronized
             if (in_array($action, ['opened', 'reopened', 'synchronize']) && $project->github_auto_move_pr) {
-                if ($linkedIssue->status === IssueStatus::TO_DO) {
+                if (in_array($linkedIssue->status, [IssueStatus::TO_DO, IssueStatus::IN_PROGRESS], true)) {
                     $linkedIssue->update(['status' => IssueStatus::IN_REVIEW]);
                     $automationApplied[] = "Issue {$linkedIssue->issue_key} dipindahkan ke 'In Review'.";
                 }

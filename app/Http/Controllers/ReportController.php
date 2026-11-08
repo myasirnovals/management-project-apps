@@ -2,67 +2,53 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
 use App\Enums\IssueType;
-use App\Enums\SprintStatus;
 use App\Models\Project;
-use App\Models\Sprint;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ReportController extends Controller
 {
-    /**
-     * Display the Reports hub.
-     */
     public function index(Project $project): View
     {
         $reports = [
             [
                 'id' => 'burndown',
                 'title' => 'Burn Down Report',
-                'description' => 'Melacak total pekerjaan yang tersisa, dan memproyeksikan kemungkinan mencapai tujuan sprint.',
-                'icon' => 'trending-down',
-                'badge' => 'Sprint Tracking',
+                'description' => 'Melacak sisa pekerjaan harian berdasarkan penyelesaian tiket nyata terhadap garis target sprint.',
+                'badge' => 'Pelacakan Sprint',
             ],
             [
                 'id' => 'burnup',
                 'title' => 'Burn Up Report',
-                'description' => 'Melacak perubahan dalam lingkup dan kemajuan sprint dibandingkan dengan cakupan totalnya.',
-                'icon' => 'trending-up',
-                'badge' => 'Scope Creep',
+                'description' => 'Membandingkan akumulasi pekerjaan selesai terhadap total cakupan (scope) sprint.',
+                'badge' => 'Cakupan & Progres',
             ],
             [
                 'id' => 'velocity',
                 'title' => 'Velocity Report',
-                'description' => 'Melacak komitmen vs pekerjaan yang diselesaikan dari sprint ke sprint untuk mengukur kecepatan tim.',
-                'icon' => 'bar-chart',
-                'badge' => 'Team Velocity',
+                'description' => 'Membandingkan komitmen story points dengan realisasi penyelesaian antar-sprint.',
+                'badge' => 'Kecepatan Tim',
             ],
             [
                 'id' => 'cfd',
-                'title' => 'Cumulative Flow Diagram (CFD)',
-                'description' => 'Menunjukkan status masalah dari waktu ke waktu dan membantu mengidentifikasi potensi bottleneck alur kerja.',
-                'icon' => 'layers',
-                'badge' => 'Workflow Analysis',
+                'title' => 'Distribusi Alur Kerja (CFD)',
+                'description' => 'Menampilkan komposisi status tiket untuk mengidentifikasi antrean atau hambatan proses.',
+                'badge' => 'Analisis Alur',
             ],
             [
                 'id' => 'epic',
                 'title' => 'Epic Report',
-                'description' => 'Rangkuman kemajuan pengerjaan issue yang terdapat di dalam inisiatif Epic.',
-                'icon' => 'award',
-                'badge' => 'Initiatives',
+                'description' => 'Rangkuman persentase penyelesaian seluruh tiket di bawah setiap inisiatif Epic.',
+                'badge' => 'Inisiatif',
             ],
         ];
 
         return view('reports.index', compact('project', 'reports'));
     }
 
-    /**
-     * Burndown & Sprint Report (Modul VII.B.b & VII.B.c).
-     */
     public function burndown(Request $request, Project $project): View
     {
         $sprintId = $request->query('sprint_id');
@@ -71,51 +57,63 @@ class ReportController extends Controller
             : ($project->activeSprint ?? $project->sprints()->first());
 
         $sprints = $project->sprints;
-
         $issues = $sprint ? $sprint->issues()->with(['assignee', 'component'])->get() : collect();
 
-        // Calculate Burndown points
-        $totalStoryPoints = $issues->sum('story_points') ?: $issues->count();
-        $completedStoryPoints = $issues->where('status', IssueStatus::DONE)->sum('story_points') ?: $issues->where('status', IssueStatus::DONE)->count();
+        $usesPoints = $issues->sum('story_points') > 0;
+        $metricUnit = $usesPoints ? 'SP' : 'Tiket';
+        $weightFn = fn ($item) => $usesPoints ? (int) ($item->story_points ?? 0) : 1;
+
+        $totalStoryPoints = $issues->sum($weightFn);
+        $doneIssues = $issues->where('status', IssueStatus::DONE);
+        $completedStoryPoints = $doneIssues->sum($weightFn);
         $remainingStoryPoints = max(0, $totalStoryPoints - $completedStoryPoints);
 
-        // Generate ideal vs actual timeline points (days)
         $timelineData = [];
-        $startDate = $sprint && $sprint->start_date ? Carbon::parse($sprint->start_date) : Carbon::now()->subDays(5);
-        $endDate = $sprint && $sprint->end_date ? Carbon::parse($sprint->end_date) : Carbon::now()->addDays(9);
-        $totalDays = max(1, $startDate->diffInDays($endDate));
+        if ($sprint && $sprint->start_date && $sprint->end_date) {
+            $startDate = Carbon::parse($sprint->start_date)->startOfDay();
+            $endDate = Carbon::parse($sprint->end_date)->startOfDay();
+            $totalDays = max(1, (int) $startDate->diffInDays($endDate));
+            $stepIdeal = $totalDays > 0 ? ($totalStoryPoints / $totalDays) : 0;
 
-        $stepIdeal = $totalDays > 0 ? ($totalStoryPoints / $totalDays) : 0;
+            for ($i = 0; $i <= $totalDays; $i++) {
+                $dayDate = (clone $startDate)->addDays($i);
+                $idealVal = max(0, round($totalStoryPoints - ($stepIdeal * $i), 1));
 
-        for ($i = 0; $i <= $totalDays; $i++) {
-            $dayDate = (clone $startDate)->addDays($i);
-            $idealVal = max(0, round($totalStoryPoints - ($stepIdeal * $i), 1));
-            
-            // Actual burndown representation
-            $actualVal = null;
-            if ($dayDate->isPast() || $dayDate->isToday()) {
-                // progressive completion
-                $progressRatio = min(1, ($i / max(1, $totalDays)) * 0.7);
-                $actualVal = max(0, round($totalStoryPoints - ($completedStoryPoints * $progressRatio), 1));
-                if ($dayDate->isToday()) {
-                    $actualVal = $remainingStoryPoints;
+                $actualVal = null;
+                if ($dayDate->lte(Carbon::today())) {
+                    $doneByDay = $doneIssues->filter(function ($issue) use ($dayDate, $startDate) {
+                        if (!$issue->updated_at) {
+                            return false;
+                        }
+                        $completedAt = Carbon::parse($issue->updated_at);
+                        return $completedAt->lte($dayDate->copy()->endOfDay()) || $dayDate->equalTo($startDate) && $completedAt->lt($startDate);
+                    })->sum($weightFn);
+
+                    $actualVal = max(0, round($totalStoryPoints - $doneByDay, 1));
                 }
-            }
 
-            $timelineData[] = [
-                'day' => 'Hari ' . ($i + 1),
-                'date' => $dayDate->format('d M'),
-                'ideal' => $idealVal,
-                'actual' => $actualVal,
-            ];
+                $timelineData[] = [
+                    'day' => 'Hari ' . ($i + 1),
+                    'date' => $dayDate->format('d M'),
+                    'ideal' => $idealVal,
+                    'actual' => $actualVal,
+                ];
+            }
         }
 
-        return view('reports.burndown', compact('project', 'sprint', 'sprints', 'issues', 'timelineData', 'totalStoryPoints', 'remainingStoryPoints', 'completedStoryPoints'));
+        return view('reports.burndown', compact(
+            'project',
+            'sprint',
+            'sprints',
+            'issues',
+            'timelineData',
+            'totalStoryPoints',
+            'remainingStoryPoints',
+            'completedStoryPoints',
+            'metricUnit'
+        ));
     }
 
-    /**
-     * Burn Up Report (Modul VII.B.a).
-     */
     public function burnup(Request $request, Project $project): View
     {
         $sprintId = $request->query('sprint_id');
@@ -124,57 +122,81 @@ class ReportController extends Controller
             : ($project->activeSprint ?? $project->sprints()->first());
 
         $sprints = $project->sprints;
-
         $issues = $sprint ? $sprint->issues()->with(['assignee', 'component'])->get() : collect();
 
-        $totalStoryPoints = $issues->sum('story_points') ?: $issues->count();
-        $completedStoryPoints = $issues->where('status', IssueStatus::DONE)->sum('story_points') ?: $issues->where('status', IssueStatus::DONE)->count();
+        $usesPoints = $issues->sum('story_points') > 0;
+        $metricUnit = $usesPoints ? 'SP' : 'Tiket';
+        $weightFn = fn ($item) => $usesPoints ? (int) ($item->story_points ?? 0) : 1;
 
-        // Timeline points
+        $totalStoryPoints = $issues->sum($weightFn);
+        $doneIssues = $issues->where('status', IssueStatus::DONE);
+        $completedStoryPoints = $doneIssues->sum($weightFn);
+
         $timelineData = [];
-        $startDate = $sprint && $sprint->start_date ? Carbon::parse($sprint->start_date) : Carbon::now()->subDays(5);
-        $endDate = $sprint && $sprint->end_date ? Carbon::parse($sprint->end_date) : Carbon::now()->addDays(9);
-        $totalDays = max(1, $startDate->diffInDays($endDate));
+        if ($sprint && $sprint->start_date && $sprint->end_date) {
+            $startDate = Carbon::parse($sprint->start_date)->startOfDay();
+            $endDate = Carbon::parse($sprint->end_date)->startOfDay();
+            $totalDays = max(1, (int) $startDate->diffInDays($endDate));
 
-        for ($i = 0; $i <= $totalDays; $i++) {
-            $dayDate = (clone $startDate)->addDays($i);
-            $totalScope = $totalStoryPoints;
-            $completedSoFar = null;
-            if ($dayDate->isPast() || $dayDate->isToday()) {
-                $progressRatio = min(1, ($i / max(1, $totalDays)) * 0.7);
-                $completedSoFar = round($completedStoryPoints * $progressRatio, 1);
-                if ($dayDate->isToday()) {
-                    $completedSoFar = $completedStoryPoints;
+            for ($i = 0; $i <= $totalDays; $i++) {
+                $dayDate = (clone $startDate)->addDays($i);
+                $scopeByDay = $issues->filter(function ($issue) use ($dayDate, $startDate) {
+                    if (!$issue->created_at) {
+                        return true;
+                    }
+                    return Carbon::parse($issue->created_at)->lte($dayDate->copy()->endOfDay()) || $dayDate->equalTo($startDate);
+                })->sum($weightFn);
+
+                $completedSoFar = null;
+                if ($dayDate->lte(Carbon::today())) {
+                    $completedSoFar = $doneIssues->filter(function ($issue) use ($dayDate, $startDate) {
+                        if (!$issue->updated_at) {
+                            return false;
+                        }
+                        $completedAt = Carbon::parse($issue->updated_at);
+                        return $completedAt->lte($dayDate->copy()->endOfDay()) || ($dayDate->equalTo($startDate) && $completedAt->lt($startDate));
+                    })->sum($weightFn);
                 }
+
+                $timelineData[] = [
+                    'day' => 'Hari ' . ($i + 1),
+                    'date' => $dayDate->format('d M'),
+                    'scope' => max($scopeByDay, $completedSoFar ?? 0),
+                    'completed' => $completedSoFar,
+                ];
             }
-            $timelineData[] = [
-                'day' => 'Hari ' . ($i + 1),
-                'date' => $dayDate->format('d M'),
-                'scope' => $totalScope,
-                'completed' => $completedSoFar,
-            ];
         }
 
-        return view('reports.burnup', compact('project', 'sprint', 'sprints', 'issues', 'timelineData', 'totalStoryPoints', 'completedStoryPoints'));
+        return view('reports.burnup', compact(
+            'project',
+            'sprint',
+            'sprints',
+            'issues',
+            'timelineData',
+            'totalStoryPoints',
+            'completedStoryPoints',
+            'metricUnit'
+        ));
     }
 
-    /**
-     * Velocity Report (Modul VII.B.e).
-     */
     public function velocity(Project $project): View
     {
-        $sprints = $project->sprints()->with('issues')->take(7)->get();
+        $sprints = $project->sprints()->with('issues')->take(8)->get();
 
         $velocityData = [];
         foreach ($sprints as $sprint) {
-            $totalPoints = $sprint->issues->sum('story_points') ?: $sprint->issues->count();
-            $completedPoints = $sprint->issues->where('status', IssueStatus::DONE)->sum('story_points') ?: $sprint->issues->where('status', IssueStatus::DONE)->count();
+            $totalPoints = (int) $sprint->issues->sum('story_points');
+            $completedPoints = (int) $sprint->issues->where('status', IssueStatus::DONE)->sum('story_points');
+            $totalCount = $sprint->issues->count();
+            $completedCount = $sprint->issues->where('status', IssueStatus::DONE)->count();
 
             $velocityData[] = [
                 'name' => $sprint->name,
                 'status' => $sprint->status->label(),
                 'commitment' => $totalPoints,
                 'completed' => $completedPoints,
+                'total_issues' => $totalCount,
+                'completed_issues' => $completedCount,
             ];
         }
 
@@ -185,12 +207,9 @@ class ReportController extends Controller
         return view('reports.velocity', compact('project', 'velocityData', 'avgVelocity'));
     }
 
-    /**
-     * Cumulative Flow Diagram (Modul VII.B.d).
-     */
     public function cumulativeFlow(Project $project): View
     {
-        $issues = $project->issues()->where('type', '!=', IssueType::EPIC->value)->get();
+        $issues = $project->issues()->with(['assignee', 'sprint'])->where('type', '!=', IssueType::EPIC->value)->get();
 
         $statusCounts = [
             'to_do' => $issues->where('status', IssueStatus::TO_DO)->count(),
@@ -202,9 +221,6 @@ class ReportController extends Controller
         return view('reports.cumulative_flow', compact('project', 'statusCounts', 'issues'));
     }
 
-    /**
-     * Epic Report (Modul VII.B.f).
-     */
     public function epic(Project $project): View
     {
         $epics = $project->epics()->with(['epicIssues.assignee', 'epicIssues.component'])->get();

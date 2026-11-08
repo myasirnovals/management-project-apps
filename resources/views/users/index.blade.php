@@ -1,11 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <span>Kelola Tim & Anggota</span>
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">Kelola Tim &amp; Anggota</span>
+        </div>
     </x-slot>
 
     <x-slot name="headerActions">
-        <button type="button" onclick="openAddMemberModal()"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
+        <button type="button" onclick="openModalDialog('addMemberModal')"
+            class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
@@ -14,77 +16,72 @@
     </x-slot>
 
     <div class="space-y-6 max-w-7xl mx-auto">
-        <!-- Architecture Explanation Banner -->
-
         <!-- Users Table Card -->
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+                    <thead class="bg-slate-50 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                         <tr>
-                            <th class="px-6 py-4">Nama & Akun</th>
-                            <th class="px-6 py-4">Peran (Role)</th>
-                            <th class="px-6 py-4">Jabatan (Job Title)</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4">Tugas & Proyek</th>
-                            <th class="px-6 py-4 text-right">Aksi</th>
+                            <th class="px-5 py-3">Nama &amp; Akun</th>
+                            <th class="px-5 py-3">Peran (Role)</th>
+                            <th class="px-5 py-3">Jabatan</th>
+                            <th class="px-5 py-3">Status</th>
+                            <th class="px-5 py-3">Tugas &amp; Proyek</th>
+                            <th class="px-5 py-3 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/80">
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                         @foreach($users as $user)
-                        <tr class="hover:bg-slate-800/40 transition">
-                            <td class="px-6 py-4">
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                            <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs ring-2 ring-indigo-500/20">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-xs">
                                         {{ $user->initials() }}
                                     </div>
                                     <div>
-                                        <div class="font-bold text-slate-100 flex items-center gap-1.5">
+                                        <div class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                                             <span>{{ $user->name }}</span>
                                             @if($user->id === Auth::id())
-                                            <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-800 text-indigo-400 font-medium">(Anda)</span>
+                                                <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-medium">(Anda)</span>
                                             @endif
                                         </div>
                                         <div class="flex flex-wrap items-center gap-x-2 text-[11px]">
-                                            <span class="text-slate-400 font-mono">{{ $user->email }}</span>
+                                            <span class="text-slate-500 dark:text-slate-400 font-mono">{{ $user->email }}</span>
                                             @if($user->phone)
-                                            <span class="text-slate-600">•</span>
-                                            <a href="{{ $user->whatsappUrl('Halo ' . $user->name . ' 👋') }}" target="_blank"
-                                                class="inline-flex items-center gap-1 font-mono text-emerald-400 hover:text-emerald-300 font-medium hover:underline" title="Hubungi via WhatsApp">
-                                                <svg class="w-3 h-3 text-emerald-400 fill-current" viewBox="0 0 24 24">
-                                                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
-                                                </svg>
-                                                <span>{{ $user->phone }}</span>
-                                            </a>
+                                                <span class="text-slate-400">•</span>
+                                                <a href="{{ $user->whatsappUrl('Halo ' . $user->name) }}" target="_blank"
+                                                    class="inline-flex items-center gap-1 font-mono text-emerald-600 dark:text-emerald-400 hover:underline" title="Hubungi via WhatsApp">
+                                                    <span>{{ $user->phone }}</span>
+                                                </a>
                                             @endif
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold {{ $user->role->badgeClass() }}">
+                            <td class="px-5 py-3.5">
+                                <span class="px-2 py-0.5 rounded text-[11px] font-semibold {{ $user->role->badgeClass() }}">
                                     {{ $user->role->label() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-slate-300">
+                            <td class="px-5 py-3.5 text-slate-600 dark:text-slate-300">
                                 {{ $user->job_title ?: 'Anggota Tim' }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-5 py-3.5">
                                 @if($user->is_active)
-                                <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
-                                </span>
+                                    <span class="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+                                    </span>
                                 @else
-                                <span class="inline-flex items-center gap-1 text-slate-500 font-semibold">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span> Nonaktif
-                                </span>
+                                    <span class="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Nonaktif
+                                    </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-slate-400">
-                                <span class="text-slate-200 font-bold">{{ $user->assigned_issues_count }}</span> tugas •
-                                <span class="text-slate-200 font-bold">{{ $user->projects_count }}</span> proyek
+                            <td class="px-5 py-3.5 text-slate-500 dark:text-slate-400">
+                                <span class="text-slate-800 dark:text-slate-200 font-bold">{{ $user->assigned_issues_count }}</span> tugas •
+                                <span class="text-slate-800 dark:text-slate-200 font-bold">{{ $user->projects_count }}</span> proyek
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-5 py-3.5 text-right">
                                 <div class="flex items-center justify-end gap-2">
                                     <!-- Edit button -->
                                     <button type="button"
@@ -96,23 +93,23 @@
                                         data-user-phone="{{ $user->phone }}"
                                         data-user-is-active="{{ $user->is_active ? '1' : '0' }}"
                                         onclick="openEditMemberModal(this)"
-                                        class="p-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-400 transition" title="Edit Anggota">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white text-slate-600 dark:text-slate-300 transition" title="Edit Anggota">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>
                                     </button>
 
                                     <!-- Delete button (cannot delete self) -->
                                     @if($user->id !== Auth::id())
-                                    <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ $user->name }}?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-600 hover:text-white text-slate-400 transition" title="Hapus Anggota">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </form>
+                                        <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ $user->name }}?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-rose-600 hover:text-white text-slate-600 dark:text-slate-300 transition" title="Hapus Anggota">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
                                     @endif
                                 </div>
                             </td>
@@ -122,195 +119,180 @@
                 </table>
             </div>
 
-            <div class="p-4 border-t border-slate-800">
+            <div class="p-3.5 border-t border-slate-200 dark:border-slate-800">
                 {{ $users->links() }}
             </div>
         </div>
     </div>
 
-    <!-- Modal: Add New Team Member -->
-    <div id="addMemberModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl p-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
-                <div>
-                    <h3 class="text-lg font-bold text-white">Tambah Anggota Tim Baru</h3>
-                    <p class="text-xs text-slate-400">Buat kredensial login untuk rekan kerja yang bergabung.</p>
-                </div>
-                <button type="button" onclick="closeAddMemberModal()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+    <!-- Native Dialog: Add New Team Member -->
+    <dialog id="addMemberModal" class="native-modal rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl max-w-lg w-full p-0 overflow-hidden" closedby="any">
+        <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-slate-800">
+            <div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Tambah Anggota Tim Baru</h3>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Buat akun untuk rekan kerja yang bergabung.</p>
+            </div>
+            <button type="button" onclick="closeModalDialog('addMemberModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-lg leading-none">&times;</button>
+        </div>
+
+        <form method="POST" action="{{ route('users.store') }}" class="p-5 space-y-4 text-xs">
+            @csrf
+
+            <!-- Name -->
+            <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap *</label>
+                <input type="text" name="name" required placeholder="Contoh: Achmad Maulana"
+                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <form method="POST" action="{{ route('users.store') }}" class="space-y-4">
-                @csrf
-
-                <!-- Name -->
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Lengkap *</label>
-                    <input type="text" name="name" required placeholder="Contoh: Achmad Maulana"
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-
-                <!-- Email -->
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Email (Digunakan untuk Login) *</label>
-                    <input type="email" name="email" required placeholder="Contoh: maulana@project.local"
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-
-                <!-- WhatsApp / Phone -->
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center justify-between">
-                        <span>Nomor WhatsApp (Aktif)</span>
-                        <span class="text-[11px] text-emerald-400 font-normal lowercase">untuk follow-up & pengingat</span>
-                    </label>
-                    <input type="text" name="phone" placeholder="Contoh: 08123456789 atau 628123456789"
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Role -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Peran (Scrum Role) *</label>
-                        <select name="role" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="developer" selected>Developer</option>
-                            <option value="scrum_master">Scrum Master</option>
-                            <option value="product_owner">Product Owner</option>
-                            <option value="project_manager">Project Manager</option>
-                            <option value="viewer">Viewer (Read Only)</option>
-                        </select>
-                    </div>
-
-                    <!-- Job Title -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Jabatan / Spesialisasi</label>
-                        <input type="text" name="job_title" placeholder="e.g. Frontend, QA, UI/UX"
-                            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                </div>
-
-                <!-- Initial Password -->
-                <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">Kata Sandi Awal *</label>
-                        <button type="button" onclick="generatePassword('new_user_pwd')" class="text-[11px] text-indigo-400 hover:underline">
-                            Acak Sandi
-                        </button>
-                    </div>
-                    <input id="new_user_pwd" type="text" name="password" required value="password123"
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <p class="text-[11px] text-slate-500 mt-1">Berikan kata sandi ini kepada rekan tim Anda untuk login pertama kali.</p>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                    <button type="button" onclick="closeAddMemberModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                        Simpan Anggota
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Edit Team Member -->
-    <div id="editMemberModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl p-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
-                <div>
-                    <h3 class="text-lg font-bold text-white">Edit Data Anggota Tim</h3>
-                    <p class="text-xs text-slate-400" id="editMemberSubhead">Perbarui role atau kredensial anggota tim.</p>
-                </div>
-                <button type="button" onclick="closeEditMemberModal()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+            <!-- Email -->
+            <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Email (Digunakan untuk Login) *</label>
+                <input type="email" name="email" required placeholder="Contoh: maulana@project.local"
+                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <form id="editMemberForm" method="POST" class="space-y-4">
-                @csrf
-                @method('PUT')
+            <!-- WhatsApp / Phone -->
+            <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                    <span>Nomor WhatsApp (Aktif)</span>
+                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">untuk follow-up &amp; pengingat</span>
+                </label>
+                <input type="text" name="phone" placeholder="Contoh: 08123456789 atau 628123456789"
+                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
 
-                <!-- Name -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Role -->
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Lengkap *</label>
-                    <input type="text" id="edit_name" name="name" required
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Peran (Role) *</label>
+                    <select name="role" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="developer" selected>Developer</option>
+                        <option value="scrum_master">Scrum Master</option>
+                        <option value="product_owner">Product Owner</option>
+                        <option value="project_manager">Project Manager</option>
+                        <option value="viewer">Viewer (Read Only)</option>
+                    </select>
                 </div>
 
-                <!-- Email -->
+                <!-- Job Title -->
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Email *</label>
-                    <input type="email" id="edit_email" name="email" required
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jabatan</label>
+                    <input type="text" name="job_title" placeholder="Contoh: QA, Frontend"
+                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
+            </div>
 
-                <!-- WhatsApp / Phone -->
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center justify-between">
-                        <span>Nomor WhatsApp (Aktif)</span>
-                        <span class="text-[11px] text-emerald-400 font-normal lowercase">format: 08... atau 628...</span>
-                    </label>
-                    <input type="text" id="edit_phone" name="phone" placeholder="Contoh: 08123456789 atau 628123456789"
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Role -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Peran (Role) *</label>
-                        <select id="edit_role" name="role" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="developer">Developer</option>
-                            <option value="scrum_master">Scrum Master</option>
-                            <option value="product_owner">Product Owner</option>
-                            <option value="project_manager">Project Manager</option>
-                            <option value="viewer">Viewer (Read Only)</option>
-                        </select>
-                    </div>
-
-                    <!-- Job Title -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Jabatan</label>
-                        <input type="text" id="edit_job_title" name="job_title"
-                            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Status -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Status Akun</label>
-                        <select id="edit_status" name="is_active" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="1">Aktif</option>
-                            <option value="0">Nonaktif</option>
-                        </select>
-                    </div>
-
-                    <!-- Reset Password (optional) -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Ganti Sandi (Opsional)</label>
-                        <input type="password" name="password" placeholder="Kosongkan jika tidak diubah"
-                            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                    <button type="button" onclick="closeEditMemberModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-                        Simpan Perubahan
+            <!-- Initial Password -->
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300">Kata Sandi Awal *</label>
+                    <button type="button" onclick="generatePassword('new_user_pwd')" class="text-[11px] text-blue-600 dark:text-blue-400 hover:underline">
+                        Acak Sandi
                     </button>
                 </div>
-            </form>
+                <input id="new_user_pwd" type="text" name="password" required value="password123"
+                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Berikan kata sandi ini kepada rekan tim untuk login pertama kali.</p>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button type="button" onclick="closeModalDialog('addMemberModal')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    Batal
+                </button>
+                <button type="submit" class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition">
+                    Simpan Anggota
+                </button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Native Dialog: Edit Team Member -->
+    <dialog id="editMemberModal" class="native-modal rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl max-w-lg w-full p-0 overflow-hidden" closedby="any">
+        <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-slate-800">
+            <div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Edit Data Anggota Tim</h3>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Perbarui peran atau kredensial anggota tim.</p>
+            </div>
+            <button type="button" onclick="closeModalDialog('editMemberModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-lg leading-none">&times;</button>
         </div>
-    </div>
+
+        <form id="editMemberForm" method="POST" class="p-5 space-y-4 text-xs">
+            @csrf
+            @method('PUT')
+
+            <!-- Name -->
+            <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap *</label>
+                <input type="text" id="edit_name" name="name" required
+                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Email *</label>
+                <input type="email" id="edit_email" name="email" required
+                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- WhatsApp / Phone -->
+            <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nomor WhatsApp (Aktif)</label>
+                <input type="text" id="edit_phone" name="phone" placeholder="Contoh: 08123456789 atau 628123456789"
+                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Role -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Peran (Role) *</label>
+                    <select id="edit_role" name="role" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="developer">Developer</option>
+                        <option value="scrum_master">Scrum Master</option>
+                        <option value="product_owner">Product Owner</option>
+                        <option value="project_manager">Project Manager</option>
+                        <option value="viewer">Viewer (Read Only)</option>
+                    </select>
+                </div>
+
+                <!-- Job Title -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jabatan</label>
+                    <input type="text" id="edit_job_title" name="job_title"
+                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Status -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Akun</label>
+                    <select id="edit_status" name="is_active" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
+                    </select>
+                </div>
+
+                <!-- Reset Password (optional) -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Ganti Sandi (Opsional)</label>
+                    <input type="password" name="password" placeholder="Kosongkan jika tidak diubah"
+                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button type="button" onclick="closeModalDialog('editMemberModal')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    Batal
+                </button>
+                <button type="submit" class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </dialog>
 
     <script>
-        function openAddMemberModal() {
-            document.getElementById('addMemberModal').classList.remove('hidden');
-        }
-
-        function closeAddMemberModal() {
-            document.getElementById('addMemberModal').classList.add('hidden');
-        }
-
         function openEditMemberModal(el) {
             document.getElementById('editMemberForm').action = '/users/' + el.dataset.userId;
             document.getElementById('edit_name').value = el.dataset.userName;
@@ -319,11 +301,7 @@
             document.getElementById('edit_job_title').value = el.dataset.userJobTitle || '';
             document.getElementById('edit_phone').value = el.dataset.userPhone || '';
             document.getElementById('edit_status').value = el.dataset.userIsActive;
-            document.getElementById('editMemberModal').classList.remove('hidden');
-        }
-
-        function closeEditMemberModal() {
-            document.getElementById('editMemberModal').classList.add('hidden');
+            openModalDialog('editMemberModal');
         }
 
         function generatePassword(targetId) {

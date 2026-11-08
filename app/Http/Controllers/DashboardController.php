@@ -21,31 +21,33 @@ class DashboardController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
+        $isPm = $user->isProjectManager();
 
-        // Projects the user owns or belongs to
-        $projects = Project::with(['activeSprint', 'members'])
+        $projectsQuery = Project::with(['activeSprint', 'members'])
             ->withCount([
-                'issues as open_issues_count' => function ($query) {
-                    $query->where('status', '!=', IssueStatus::DONE->value);
-                },
-                'issues as done_issues_count' => function ($query) {
-                    $query->where('status', IssueStatus::DONE->value);
-                },
-                'feedbacks as pending_feedback_count' => function ($query) {
-                    $query->where('status', 'pending');
-                },
-            ])
-            ->latest()
-            ->get();
+                'issues as open_issues_count' => fn ($query) => $query->where('status', '!=', IssueStatus::DONE->value),
+                'issues as done_issues_count' => fn ($query) => $query->where('status', IssueStatus::DONE->value),
+                'feedbacks as pending_feedback_count' => fn ($query) => $query->where('status', 'pending'),
+            ]);
 
+        if (!$isPm) {
+            $projectsQuery->where(function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                    ->orWhereHas('members', fn ($m) => $m->where('users.id', $user->id));
+            });
+        }
+
+        $projects = $projectsQuery->latest()->get();
+        $accessibleProjectIds = $projects->pluck('id');
         $firstProject = $projects->first();
 
         $activeSprints = Sprint::with('project')
+            ->whereIn('project_id', $accessibleProjectIds)
             ->where('status', SprintStatus::ACTIVE->value)
             ->get();
 
-        // Issues assigned to logged in user (excluding Done)
         $myIssues = Issue::with(['project', 'sprint'])
+            ->whereIn('project_id', $accessibleProjectIds)
             ->where('assignee_id', $user->id)
             ->where('status', '!=', IssueStatus::DONE->value)
             ->orderByRaw("CASE priority WHEN 'highest' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 ELSE 5 END")
@@ -53,24 +55,40 @@ class DashboardController extends Controller
             ->get();
 
         $recentIssues = Issue::with(['project', 'assignee', 'reporter'])
+            ->whereIn('project_id', $accessibleProjectIds)
             ->latest()
             ->take(6)
             ->get();
 
-        // Common counters
         $totalProjectsCount = $projects->count();
         $activeSprintsCount = $activeSprints->count();
-        $myTasksCount = Issue::where('assignee_id', $user->id)->where('status', '!=', IssueStatus::DONE->value)->count();
-        $myInReviewTasksCount = Issue::where('assignee_id', $user->id)->where('status', IssueStatus::IN_REVIEW->value)->count();
-        $myCompletedTasksCount = Issue::where('assignee_id', $user->id)->where('status', IssueStatus::DONE->value)->count();
-        $completedTasksCount = Issue::where('status', IssueStatus::DONE->value)->count();
-        $totalIssuesCount = Issue::count();
-        $openIssuesCount = Issue::where('status', '!=', IssueStatus::DONE->value)->count();
-        $workspaceCompletionRate = $totalIssuesCount > 0 ? (int) round(($completedTasksCount / $totalIssuesCount) * 100) : 0;
+        $myTasksCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->where('assignee_id', $user->id)
+            ->where('status', '!=', IssueStatus::DONE->value)
+            ->count();
+        $myInReviewTasksCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->where('assignee_id', $user->id)
+            ->where('status', IssueStatus::IN_REVIEW->value)
+            ->count();
+        $myCompletedTasksCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->where('assignee_id', $user->id)
+            ->where('status', IssueStatus::DONE->value)
+            ->count();
+        $completedTasksCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->where('status', IssueStatus::DONE->value)
+            ->count();
+        $totalIssuesCount = Issue::whereIn('project_id', $accessibleProjectIds)->count();
+        $openIssuesCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->where('status', '!=', IssueStatus::DONE->value)
+            ->count();
+        $workspaceCompletionRate = $totalIssuesCount > 0
+            ? (int) round(($completedTasksCount / $totalIssuesCount) * 100)
+            : 0;
 
-        // Feedback data
-        $pendingFeedbackCount = ProjectFeedback::where('status', 'pending')->count();
-        $pendingFeedbacks = $user->isProjectManager()
+        $pendingFeedbackCount = ProjectFeedback::whereIn('project_id', $accessibleProjectIds)
+            ->where('status', 'pending')
+            ->count();
+        $pendingFeedbacks = $isPm
             ? ProjectFeedback::with(['project', 'user'])->where('status', 'pending')->latest()->take(5)->get()
             : collect();
 
@@ -80,17 +98,20 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Role-specific metrics
-        $inReviewIssuesCount = Issue::where('status', IssueStatus::IN_REVIEW->value)->count();
-        $activeSprintIssuesCount = Issue::whereHas('sprint', function ($q) {
-            $q->where('status', SprintStatus::ACTIVE->value);
-        })->where('status', '!=', IssueStatus::DONE->value)->count();
-
-        $backlogIssuesCount = Issue::whereNull('sprint_id')
+        $inReviewIssuesCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->where('status', IssueStatus::IN_REVIEW->value)
+            ->count();
+        $activeSprintIssuesCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->whereHas('sprint', fn ($q) => $q->where('status', SprintStatus::ACTIVE->value))
             ->where('status', '!=', IssueStatus::DONE->value)
             ->count();
-
-        $activeReleasesCount = ReleaseVersion::where('status', VersionStatus::UNRELEASED->value)->count();
+        $backlogIssuesCount = Issue::whereIn('project_id', $accessibleProjectIds)
+            ->whereNull('sprint_id')
+            ->where('status', '!=', IssueStatus::DONE->value)
+            ->count();
+        $activeReleasesCount = ReleaseVersion::whereIn('project_id', $accessibleProjectIds)
+            ->where('status', VersionStatus::UNRELEASED->value)
+            ->count();
 
         $stats = [
             'total_projects' => $totalProjectsCount,

@@ -90,6 +90,8 @@ class ProjectFeedbackController extends Controller
      */
     public function updateResponse(Request $request, Project $project, ProjectFeedback $feedback): RedirectResponse
     {
+        abort_if($feedback->project_id !== $project->id, 404);
+
         if (!$this->isProjectManager()) {
             abort(403, 'Hanya Project Manager yang dapat memberikan tanggapan dan mengubah status saran.');
         }
@@ -115,6 +117,8 @@ class ProjectFeedbackController extends Controller
      */
     public function convertToIssue(Request $request, Project $project, ProjectFeedback $feedback): RedirectResponse
     {
+        abort_if($feedback->project_id !== $project->id, 404);
+
         if (!$this->isProjectManager()) {
             abort(403, 'Hanya Project Manager yang dapat mengonversi saran menjadi tiket Issue.');
         }
@@ -124,7 +128,6 @@ class ProjectFeedbackController extends Controller
                 ->with('info', 'Saran ini telah dikonversi menjadi tiket Issue sebelumnya.');
         }
 
-        // Determine issue type (can be customized from request or defaulted from category)
         $requestedType = $request->input('issue_type');
         $issueType = $requestedType ? IssueType::tryFrom($requestedType) : null;
         if (!$issueType) {
@@ -142,11 +145,11 @@ class ProjectFeedbackController extends Controller
         $issueKey = $project->generateNextIssueKey();
         $maxOrder = Issue::where('project_id', $project->id)->max('order_index') ?? 0;
 
-        $desc = "💡 **Masukan dari Anggota:** " . ($feedback->user->name ?? 'Anggota Tim') . "\n\n"
+        $desc = "Masukan dari Anggota: " . ($feedback->user->name ?? 'Anggota Tim') . "\n\n"
               . $feedback->description;
 
         if (!empty($feedback->pm_response)) {
-            $desc .= "\n\n---\n**Catatan Project Manager:**\n" . $feedback->pm_response;
+            $desc .= "\n\nCatatan Project Manager:\n" . $feedback->pm_response;
         }
 
         $issue = Issue::create([
@@ -159,7 +162,7 @@ class ProjectFeedbackController extends Controller
             'priority' => $priority,
             'story_points' => $storyPoints,
             'reporter_id' => $feedback->user_id ?: Auth::id(),
-            'sprint_id' => null, // Placed directly into Backlog
+            'sprint_id' => null,
             'order_index' => $maxOrder + 1,
         ]);
 
@@ -180,6 +183,8 @@ class ProjectFeedbackController extends Controller
      */
     public function destroy(Project $project, ProjectFeedback $feedback): RedirectResponse
     {
+        abort_if($feedback->project_id !== $project->id, 404);
+
         $canDelete = $this->isProjectManager() || (Auth::id() === $feedback->user_id && $feedback->status === 'pending');
 
         if (!$canDelete) {

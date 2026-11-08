@@ -78,6 +78,8 @@ class IssueController extends Controller
      */
     public function show(Project $project, Issue $issue): JsonResponse|View
     {
+        abort_if($issue->project_id !== $project->id, 404);
+
         $issue->load([
             'assignee', 
             'reporter', 
@@ -93,7 +95,8 @@ class IssueController extends Controller
 
         if (request()->wantsJson() || request()->ajax()) {
             $waService = app(\App\Services\WhatsAppService::class);
-            $hasAssigneeWa = (bool) ($issue->assignee && $issue->assignee->hasWhatsApp());
+            $canSendWa = (bool) Auth::user()?->canManageSprints();
+            $hasAssigneeWa = (bool) ($canSendWa && $issue->assignee && $issue->assignee->hasWhatsApp());
             $currentUserId = Auth::id();
             $isPm = $this->isProjectManager();
 
@@ -176,6 +179,8 @@ class IssueController extends Controller
      */
     public function update(Request $request, Project $project, Issue $issue): JsonResponse|RedirectResponse
     {
+        abort_if($issue->project_id !== $project->id, 404);
+
         if (!Auth::user()?->canMutateIssues()) {
             abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
         }
@@ -211,10 +216,12 @@ class IssueController extends Controller
     }
 
     /**
-     * Add a sub-task to an issue (Modul II.C Gambar 2.20 & 2.21).
+     * Add a sub-task to an issue.
      */
     public function storeSubtask(Request $request, Project $project, Issue $issue): JsonResponse|RedirectResponse
     {
+        abort_if($issue->project_id !== $project->id, 404);
+
         if (!Auth::user()?->canMutateIssues()) {
             abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
         }
@@ -259,6 +266,8 @@ class IssueController extends Controller
      */
     public function destroy(Project $project, Issue $issue): JsonResponse|RedirectResponse
     {
+        abort_if($issue->project_id !== $project->id, 404);
+
         if (!Auth::user()?->canMutateIssues()) {
             abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
         }

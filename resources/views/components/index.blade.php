@@ -1,93 +1,114 @@
+@php
+    $canManageComponents = Auth::user()->canManageComponents();
+@endphp
+
 <x-app-layout :project="$project">
     <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <span class="font-mono text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 text-xs">
+        <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-mono text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">
                 {{ $project->key }}
             </span>
-            <span class="text-sm font-bold text-white">Komponen Proyek</span>
+            <span class="text-base font-bold text-slate-900 dark:text-white">Komponen Arsitektur Proyek</span>
         </div>
     </x-slot>
 
-    <x-slot name="headerActions">
-        <button type="button" onclick="openCreateComponentModal()"
-            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Buat Komponen</span>
-        </button>
-    </x-slot>
+    @if($canManageComponents)
+        <x-slot name="headerActions">
+            <button type="button" command="show-modal" commandfor="createComponentModal" class="btn-primary !text-xs !py-1.5 !px-3">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Buat Komponen</span>
+            </button>
+        </x-slot>
+    @endif
 
     <div class="space-y-6 max-w-6xl mx-auto">
-        <!-- Handbook explanation banner -->
-        <div class="bg-indigo-950/20 border border-indigo-500/20 rounded-2xl p-4 text-xs text-indigo-200">
-            <strong>Apa itu Komponen?</strong> Project component adalah pengelompokan kebutuhan yang logis dalam sebuah software project (contoh: Front-end, Back-end, Dokumentasi, UI/UX). Komponen membantu menstrukturkan issue ke dalam modul spesifik dan menunjuk penanggung jawab (Component Lead).
+        <div class="app-card p-4 text-xs text-slate-700 dark:text-slate-300">
+            <p>
+                <strong>Komponen Modul:</strong> Mengelompokkan issue dan backlog ke dalam sub-sistem atau lapisan fungsional (seperti Frontend, Backend API, Basis Data, atau Keamanan) untuk memudahkan pembagian penanggung jawab teknis.
+            </p>
         </div>
 
-        <!-- Components Table -->
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+        <div class="app-card">
+            <div class="p-4 sm:px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white">Daftar Komponen</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola penanggung jawab dan pemetaan issue</p>
+                </div>
+                <span class="text-xs font-mono font-medium text-slate-500 dark:text-slate-400">
+                    {{ $components->count() }} Komponen
+                </span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 text-xs border-b border-slate-200 dark:border-slate-700">
                         <tr>
-                            <th class="px-6 py-4">Nama Komponen</th>
-                            <th class="px-6 py-4">Deskripsi</th>
-                            <th class="px-6 py-4">Component Lead</th>
-                            <th class="px-6 py-4">Terkait Issue</th>
-                            <th class="px-6 py-4 text-right">Aksi</th>
+                            <th scope="col" class="px-5 py-3">Nama Komponen</th>
+                            <th scope="col" class="px-5 py-3">Deskripsi</th>
+                            <th scope="col" class="px-5 py-3">Penanggung Jawab (Lead)</th>
+                            <th scope="col" class="px-5 py-3">Issue Terkait</th>
+                            @if($canManageComponents)
+                                <th scope="col" class="px-5 py-3 text-right">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/80">
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700 text-xs">
                         @forelse($components as $comp)
-                        <tr class="hover:bg-slate-800/40 transition">
-                            <td class="px-6 py-4">
-                                <div class="font-bold text-slate-100 flex items-center gap-2">
-                                    <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-[11px]">
-                                        🧩
-                                    </div>
-                                    <span>{{ $comp->name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-slate-400 max-w-md">
-                                {{ $comp->description ?: '-' }}
-                            </td>
-                            <td class="px-6 py-4">
-                                @if($comp->lead)
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-[10px] font-bold flex items-center justify-center">
-                                        {{ $comp->lead->initials() }}
-                                    </div>
-                                    <span class="text-slate-200 font-medium">{{ $comp->lead->name }}</span>
-                                </div>
-                                @else
-                                <span class="text-slate-500 italic">Project Default</span>
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                <td class="px-5 py-3 font-semibold text-slate-900 dark:text-white">
+                                    {{ $comp->name }}
+                                </td>
+                                <td class="px-5 py-3 text-slate-600 dark:text-slate-400 max-w-sm">
+                                    {{ $comp->description ?: 'Tidak ada deskripsi.' }}
+                                </td>
+                                <td class="px-5 py-3">
+                                    @if($comp->lead)
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-[10px] font-bold">
+                                                {{ $comp->lead->initials() }}
+                                            </span>
+                                            <span class="text-slate-800 dark:text-slate-200 font-medium">{{ $comp->lead->name }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-slate-400 dark:text-slate-500 italic">Default Proyek</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3">
+                                    <span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] font-semibold">
+                                        {{ $comp->issues_count }} issue
+                                    </span>
+                                </td>
+                                @if($canManageComponents)
+                                    <td class="px-5 py-3 text-right">
+                                        <div class="inline-flex items-center gap-1.5">
+                                            <button type="button"
+                                                data-id="{{ $comp->id }}"
+                                                data-name="{{ $comp->name }}"
+                                                data-desc="{{ $comp->description }}"
+                                                data-lead="{{ $comp->lead_id }}"
+                                                onclick="openEditComponentModal(this)"
+                                                class="btn-secondary !text-xs !py-1 !px-2.5">
+                                                Edit
+                                            </button>
+                                            <form method="POST" action="{{ route('projects.components.destroy', [$project, $comp]) }}" onsubmit="return confirm('Hapus komponen ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-danger !text-xs !py-1 !px-2.5">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold text-[11px]">
-                                    {{ $comp->issues_count }} issues
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <form method="POST" action="{{ route('projects.components.destroy', [$project, $comp]) }}" onsubmit="return confirm('Hapus komponen ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition" title="Hapus Komponen">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+                            </tr>
                         @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-slate-500 text-xs">
-                                Belum ada komponen yang dibuat untuk proyek ini.
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="{{ $canManageComponents ? 5 : 4 }}" class="px-5 py-8 text-center text-slate-500 dark:text-slate-400">
+                                    Belum ada komponen yang dibuat untuk proyek ini.
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -95,53 +116,108 @@
         </div>
     </div>
 
-    <!-- Modal: Create Component (Modul I Gambar 1.33) -->
-    <div id="createComponentModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
-                <h3 class="text-base font-bold text-white">Create Component</h3>
-                <button type="button" onclick="closeCreateComponentModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+    @if($canManageComponents)
+        <!-- Modal Create Component -->
+        <dialog id="createComponentModal" closedby="any" aria-labelledby="create_comp_title">
+            <div class="p-5 sm:p-6">
+                <div class="flex items-start justify-between pb-3 border-b border-slate-200 dark:border-slate-700 mb-4">
+                    <h3 id="create_comp_title" class="text-base font-bold text-slate-900 dark:text-white">Buat Komponen Baru</h3>
+                    <button type="button" command="close" commandfor="createComponentModal"
+                        class="min-h-8 min-w-8 inline-flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                        aria-label="Tutup dialog">&times;</button>
+                </div>
+
+                <form method="POST" action="{{ route('projects.components.store', $project) }}" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label for="create_comp_name" class="form-label">Nama Komponen *</label>
+                        <input id="create_comp_name" type="text" name="name" required placeholder="Contoh: Frontend, Backend API, Kasir"
+                            class="form-input">
+                    </div>
+
+                    <div>
+                        <label for="create_comp_desc" class="form-label">Deskripsi</label>
+                        <textarea id="create_comp_desc" name="description" rows="2" placeholder="Cakupan teknis atau modul sistem..."
+                            class="form-input"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="create_comp_lead" class="form-label">Penanggung Jawab (Lead)</label>
+                        <select id="create_comp_lead" name="lead_id" class="form-select">
+                            <option value="">Default Proyek</option>
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <button type="button" command="close" commandfor="createComponentModal" class="btn-secondary !text-xs !py-1.5 !px-3">Batal</button>
+                        <button type="submit" class="btn-primary !text-xs !py-1.5 !px-3">Simpan Komponen</button>
+                    </div>
+                </form>
             </div>
+        </dialog>
 
-            <form method="POST" action="{{ route('projects.components.store', $project) }}" class="space-y-4">
-                @csrf
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Komponen *</label>
-                    <input type="text" name="name" required placeholder="Contoh: Authentication, Frontend, API"
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
+        <!-- Modal Edit Component -->
+        <dialog id="editComponentModal" closedby="any" aria-labelledby="edit_comp_title">
+            <div class="p-5 sm:p-6">
+                <div class="flex items-start justify-between pb-3 border-b border-slate-200 dark:border-slate-700 mb-4">
+                    <h3 id="edit_comp_title" class="text-base font-bold text-slate-900 dark:text-white">Edit Komponen</h3>
+                    <button type="button" command="close" commandfor="editComponentModal"
+                        class="min-h-8 min-w-8 inline-flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                        aria-label="Tutup dialog">&times;</button>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Deskripsi</label>
-                    <textarea name="description" rows="2" placeholder="Fungsi atau cakupan modul..."
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white"></textarea>
-                </div>
+                <form id="editComponentForm" method="POST" class="space-y-4">
+                    @csrf
+                    @method('PUT')
+                    <div>
+                        <label for="edit_comp_name" class="form-label">Nama Komponen *</label>
+                        <input id="edit_comp_name" type="text" name="name" required class="form-input">
+                    </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Component Lead</label>
-                    <select name="lead_id" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
-                        <option value="">-- Project Default --</option>
-                        @foreach($users as $u)
-                        <option value="{{ $u->id }}">{{ $u->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div>
+                        <label for="edit_comp_desc" class="form-label">Deskripsi</label>
+                        <textarea id="edit_comp_desc" name="description" rows="2" class="form-input"></textarea>
+                    </div>
 
-                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="closeCreateComponentModal()" class="px-4 py-2 text-xs text-slate-400 hover:text-white">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500">Simpan Komponen</button>
-                </div>
-            </form>
-        </div>
-    </div>
+                    <div>
+                        <label for="edit_comp_lead" class="form-label">Penanggung Jawab (Lead)</label>
+                        <select id="edit_comp_lead" name="lead_id" class="form-select">
+                            <option value="">Default Proyek</option>
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-    <script>
-        function openCreateComponentModal() {
-            document.getElementById('createComponentModal').classList.remove('hidden');
-        }
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <button type="button" command="close" commandfor="editComponentModal" class="btn-secondary !text-xs !py-1.5 !px-3">Batal</button>
+                        <button type="submit" class="btn-primary !text-xs !py-1.5 !px-3">Perbarui Komponen</button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
 
-        function closeCreateComponentModal() {
-            document.getElementById('createComponentModal').classList.add('hidden');
-        }
-    </script>
+        <script>
+            function openEditComponentModal(btn) {
+                const id = btn.dataset.id;
+                const name = btn.dataset.name;
+                const desc = btn.dataset.desc || '';
+                const lead = btn.dataset.lead || '';
+
+                const form = document.getElementById('editComponentForm');
+                if (form) form.action = `/projects/{{ $project->code }}/components/${id}`;
+                const nameEl = document.getElementById('edit_comp_name');
+                if (nameEl) nameEl.value = name;
+                const descEl = document.getElementById('edit_comp_desc');
+                if (descEl) descEl.value = desc;
+                const leadEl = document.getElementById('edit_comp_lead');
+                if (leadEl) leadEl.value = lead;
+
+                openModalDialog('editComponentModal');
+            }
+        </script>
+    @endif
 </x-app-layout>

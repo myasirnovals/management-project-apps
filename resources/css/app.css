@@ -2,10 +2,163 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../../app/**/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+@custom-variant dark {
+    @media (prefers-color-scheme: dark) {
+        :root:not(:has(> head > meta[name="color-scheme"][content="light"])) & {
+            @slot;
+        }
+    }
+    :root:has(> head > meta[name="color-scheme"][content="dark"]) & {
+        @slot;
+    }
+}
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+:root {
+    --brand-accent-light: #1d4ed8;
+    --brand-accent-dark: #60a5fa;
+    --accent-color: var(--brand-accent-light);
+    --scrollbar-track: #f1f5f9;
+    --scrollbar-thumb: #94a3b8;
+
+    @media (prefers-color-scheme: dark) {
+        --accent-color: var(--brand-accent-dark);
+        --scrollbar-track: #0f172a;
+        --scrollbar-thumb: #475569;
+    }
+
+    &:has(> head > meta[name="color-scheme"][content="dark"]) {
+        color-scheme: dark;
+        --accent-color: var(--brand-accent-dark);
+        --scrollbar-track: #0f172a;
+        --scrollbar-thumb: #475569;
+    }
+
+    &:has(> head > meta[name="color-scheme"][content="light"]) {
+        color-scheme: light;
+        --accent-color: var(--brand-accent-light);
+        --scrollbar-track: #f1f5f9;
+        --scrollbar-thumb: #94a3b8;
+    }
+
+    @supports (color: light-dark(white, black)) {
+        --accent-color: light-dark(var(--brand-accent-light), var(--brand-accent-dark));
+        --scrollbar-track: light-dark(#f1f5f9, #0f172a);
+        --scrollbar-thumb: light-dark(#94a3b8, #475569);
+    }
+
+    color-scheme: light dark;
+    accent-color: var(--accent-color);
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+@layer base {
+    body {
+        font-family: var(--font-sans);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+    }
+
+    dialog:modal {
+        overscroll-behavior: contain;
+        margin: auto;
+        max-inline-size: min(94dvw, 42rem);
+        max-block-size: 90dvh;
+        inline-size: 100%;
+        padding: 0;
+        border-radius: 0.75rem;
+        border: 1px solid #cbd5e1;
+        background-color: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 20px 25px -5px rgb(15 23 42 / 0.18), 0 8px 10px -6px rgb(15 23 42 / 0.12);
+    }
+
+    dialog.dialog-wide:modal {
+        max-inline-size: min(95dvw, 56rem);
+    }
+
+    dialog.dialog-drawer:modal {
+        margin: 0;
+        max-inline-size: min(86dvw, 18rem);
+        max-block-size: 100dvh;
+        block-size: 100dvh;
+        border-radius: 0 0.75rem 0.75rem 0;
+        border-inline-start: 0;
+        border-block: 0;
+    }
+
+    :root:has(> head > meta[name="color-scheme"][content="dark"]) dialog:modal {
+        border-color: #334155;
+        background-color: #1e293b;
+        color: #f1f5f9;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not(:has(> head > meta[name="color-scheme"][content="light"])) dialog:modal {
+            border-color: #334155;
+            background-color: #1e293b;
+            color: #f1f5f9;
+        }
+    }
+
+    dialog::backdrop {
+        overflow: hidden;
+        overscroll-behavior: contain;
+        background-color: rgb(15 23 42 / 0.55);
+    }
+}
+
+@layer components {
+    .app-card {
+        @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl;
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 min-h-11 sm:min-h-10 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-700 hover:bg-blue-800 text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 min-h-11 sm:min-h-10 px-3.5 py-2 text-sm font-medium rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-600 transition-colors cursor-pointer;
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 min-h-11 sm:min-h-10 px-3.5 py-2 text-sm font-semibold rounded-lg bg-rose-700 hover:bg-rose-800 text-white transition-colors cursor-pointer;
+    }
+
+    .form-label {
+        @apply block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5;
+    }
+
+    .form-input {
+        @apply w-full min-h-11 sm:min-h-10 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-blue-600 dark:focus:border-blue-400;
+    }
+
+    .form-select {
+        @apply w-full min-h-11 sm:min-h-10 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-600 dark:focus:border-blue-400;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        max-inline-size: 100%;
+        container-type: inline-size;
+        scrollbar-gutter: stable;
+    }
+
+    .board-scroller {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-gutter: stable;
+    }
 }

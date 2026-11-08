@@ -68,14 +68,14 @@ class GithubPullRequest extends Model
     public function statusBadgeClasses(): string
     {
         if ($this->isMerged()) {
-            return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
+            return 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800';
         }
 
         if ($this->isOpen()) {
-            return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+            return 'bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800';
         }
 
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+        return 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800';
     }
 
     public function statusLabel(): string

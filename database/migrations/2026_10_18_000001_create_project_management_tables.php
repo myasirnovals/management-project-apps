@@ -41,7 +41,6 @@ return new class extends Migration
             $table->unique(['project_id', 'user_id']);
         });
 
-        // Components (Modul I.F)
         Schema::create('components', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
@@ -51,7 +50,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Sprints (Modul III.B)
         Schema::create('sprints', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
@@ -63,7 +61,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Release Versions (Modul V)
         Schema::create('release_versions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
@@ -75,7 +72,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Issues (Modul II, III, IV, VI)
         Schema::create('issues', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();

@@ -52,10 +52,12 @@ class SprintController extends Controller
     }
 
     /**
-     * Start a sprint (Modul III.B Gambar 3.7).
+     * Start a sprint.
      */
     public function start(Request $request, Project $project, Sprint $sprint): RedirectResponse
     {
+        abort_if($sprint->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageSprints()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Scrum Master yang berwenang memulai Sprint.');
         }
@@ -91,6 +93,8 @@ class SprintController extends Controller
      */
     public function complete(Request $request, Project $project, Sprint $sprint): RedirectResponse
     {
+        abort_if($sprint->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageSprints()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Scrum Master yang berwenang menyelesaikan Sprint.');
         }
@@ -123,6 +127,8 @@ class SprintController extends Controller
      */
     public function destroy(Project $project, Sprint $sprint): RedirectResponse
     {
+        abort_if($sprint->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageSprints()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Scrum Master yang berwenang menghapus Sprint.');
         }

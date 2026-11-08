@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
 use App\Enums\IssueType;
 use App\Enums\SprintStatus;
 use App\Models\Issue;
 use App\Models\Project;
-use App\Models\ReleaseVersion;
-use App\Models\Sprint;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -18,22 +14,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BacklogController extends Controller
 {
-    /**
-     * Display the Project Backlog page.
-     */
     public function index(Request $request, Project $project): View
     {
-        // Epics for sidebar filter (Modul II.A & VI)
         $epics = $project->epics()->withCount('epicIssues')->get();
-
         $selectedEpicId = $request->query('epic_id');
 
-        // Sprints (Active and Planning)
         $sprints = $project->sprints()
             ->with(['issues' => function ($q) use ($selectedEpicId) {
                 if ($selectedEpicId) {
@@ -42,10 +33,9 @@ class BacklogController extends Controller
                 $q->with(['assignee', 'component', 'parent', 'version'])->orderBy('order_index');
             }])
             ->whereIn('status', [SprintStatus::ACTIVE->value, SprintStatus::PLANNING->value])
-            ->orderBy('status') // Active first
+            ->orderBy('status')
             ->get();
 
-        // Backlog issues (no sprint assigned)
         $backlogQuery = Issue::with(['assignee', 'component', 'parent', 'version'])
             ->where('project_id', $project->id)
             ->whereNull('sprint_id')
@@ -74,9 +64,6 @@ class BacklogController extends Controller
         ));
     }
 
-    /**
-     * Move an issue to a sprint or back to backlog.
-     */
     public function moveToSprint(Request $request, Project $project): JsonResponse|RedirectResponse
     {
         if (!Auth::user()?->canMutateIssues()) {
@@ -92,7 +79,14 @@ class BacklogController extends Controller
         ]);
 
         $issue = Issue::where('project_id', $project->id)->findOrFail($validated['issue_id']);
-        $issue->sprint_id = $validated['sprint_id'] ? (int) $validated['sprint_id'] : null;
+
+        if (!empty($validated['sprint_id'])) {
+            $sprint = $project->sprints()->where('id', $validated['sprint_id'])->firstOrFail();
+            $issue->sprint_id = $sprint->id;
+        } else {
+            $issue->sprint_id = null;
+        }
+
         $issue->save();
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -105,16 +99,13 @@ class BacklogController extends Controller
         return back()->with('success', "Issue {$issue->issue_key} berhasil dipindahkan.");
     }
 
-    /**
-     * Clean Up backlog issues (e.g. issues older than X days or completed) (Modul VI.B).
-     */
     public function cleanUp(Request $request, Project $project): RedirectResponse
     {
         if (!Auth::user()?->canMutateIssues()) {
             abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
         }
 
-        $days = (int) $request->input('days', 90);
+        $days = max(1, (int) $request->input('days', 90));
         $thresholdDate = Carbon::now()->subDays($days);
 
         $deletedCount = Issue::where('project_id', $project->id)
@@ -123,22 +114,19 @@ class BacklogController extends Controller
             ->where('updated_at', '<=', $thresholdDate)
             ->delete();
 
-        return back()->with('success', "Clean Up Berhasil: {$deletedCount} backlog yang sudah selesai lebih dari {$days} hari telah dibersihkan.");
+        return back()->with('success', "Pembersihan selesai: {$deletedCount} tiket backlog berstatus selesai yang berumur lebih dari {$days} hari telah dihapus.");
     }
 
-    /**
-     * Bulk Action on Backlog Issues (Modul VI.B Gambar 6.14 - 6.18).
-     */
     public function bulkAction(Request $request, Project $project): RedirectResponse
     {
         if (!Auth::user()?->canMutateIssues()) {
             abort(403, 'Akses ditolak. Peran Viewer hanya memiliki hak akses lihat (read-only).');
         }
 
-        $action = $request->input('action'); // 'delete', 'change_status', 'move_sprint'
+        $action = $request->input('action');
         $issueIds = $request->input('issue_ids', []);
 
-        if (empty($issueIds)) {
+        if (empty($issueIds) || !is_array($issueIds)) {
             return back()->with('error', 'Tidak ada issue yang dipilih untuk aksi massal.');
         }
 
@@ -150,33 +138,46 @@ class BacklogController extends Controller
         }
 
         if ($action === 'change_status') {
-            $status = $request->input('target_status');
-            if ($status) {
-                DB::transaction(function () use ($project, $issueIds, $status) {
-                    Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->update([
-                        'status' => $status,
-                    ]);
-                });
-                return back()->with('success', count($issueIds) . " issue berhasil diubah statusnya menjadi {$status}.");
-            }
+            $validated = $request->validate([
+                'target_status' => ['required', Rule::enum(IssueStatus::class)],
+            ], [
+                'target_status.required' => 'Pilih status tujuan terlebih dahulu sebelum menjalankan perubahan status massal.',
+            ]);
+
+            $statusEnum = IssueStatus::from($validated['target_status']);
+            DB::transaction(function () use ($project, $issueIds, $statusEnum) {
+                Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->update([
+                    'status' => $statusEnum->value,
+                ]);
+            });
+            return back()->with('success', count($issueIds) . " issue berhasil diubah statusnya menjadi {$statusEnum->label()}.");
         }
 
         if ($action === 'move_sprint') {
-            $sprintId = $request->input('target_sprint_id') ?: null;
+            $rawSprint = $request->input('target_sprint_id');
+            $sprintId = null;
+
+            if (!empty($rawSprint) && $rawSprint !== 'backlog') {
+                $sprint = $project->sprints()->where('id', $rawSprint)->first();
+                if (!$sprint) {
+                    return back()->with('error', 'Sprint tujuan tidak valid untuk proyek ini.');
+                }
+                $sprintId = $sprint->id;
+            }
+
             DB::transaction(function () use ($project, $issueIds, $sprintId) {
                 Issue::where('project_id', $project->id)->whereIn('id', $issueIds)->update([
                     'sprint_id' => $sprintId,
                 ]);
             });
-            return back()->with('success', count($issueIds) . ' issue berhasil dipindahkan.');
+
+            $destLabel = $sprintId ? 'Sprint terpilih' : 'Backlog';
+            return back()->with('success', count($issueIds) . " issue berhasil dipindahkan ke {$destLabel}.");
         }
 
-        return back();
+        return back()->with('error', 'Pilih jenis aksi massal yang valid.');
     }
 
-    /**
-     * Export Backlog to CSV (Modul VI.B Gambar 6.13).
-     */
     public function exportCsv(Project $project): StreamedResponse
     {
         $fileName = "backlog-{$project->key}-" . date('Ymd_His') . ".csv";

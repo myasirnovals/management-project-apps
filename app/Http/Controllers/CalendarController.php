@@ -29,8 +29,17 @@ class CalendarController extends Controller
         $nextMonth = $monthDate->copy()->addMonth()->format('Y-m');
 
         $selectedProjectId = $request->input('project_id');
+        $user = Auth::user();
 
-        $projects = Project::orderBy('name')->get();
+        $projectsQuery = Project::orderBy('name');
+        if ($user && !$user->isProjectManager()) {
+            $projectsQuery->where(function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                    ->orWhereHas('members', fn ($m) => $m->where('users.id', $user->id));
+            });
+        }
+        $projects = $projectsQuery->get();
+        $accessibleProjectIds = $projects->pluck('id');
 
         // Calendar grid boundaries (start of week: Monday)
         $startOfGrid = $monthDate->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
@@ -38,6 +47,7 @@ class CalendarController extends Controller
 
         // Fetch Sprints overlapping grid
         $sprintsQuery = Sprint::with('project')
+            ->whereIn('project_id', $accessibleProjectIds)
             ->whereNotNull('start_date')
             ->whereNotNull('end_date')
             ->where(function ($q) use ($startOfGrid, $endOfGrid) {
@@ -57,6 +67,7 @@ class CalendarController extends Controller
 
         // Fetch Issues with due date in grid
         $issuesQuery = Issue::with(['project', 'assignee'])
+            ->whereIn('project_id', $accessibleProjectIds)
             ->whereNotNull('due_date')
             ->whereBetween('due_date', [$startOfGrid->toDateString(), $endOfGrid->toDateString()]);
 
@@ -103,11 +114,13 @@ class CalendarController extends Controller
 
         // Active sprints and upcoming deadlines for summary
         $activeSprints = Sprint::with('project')
+            ->whereIn('project_id', $accessibleProjectIds)
             ->where('status', SprintStatus::ACTIVE->value)
             ->when($selectedProjectId, fn($q) => $q->where('project_id', $selectedProjectId))
             ->get();
 
         $upcomingIssues = Issue::with('project')
+            ->whereIn('project_id', $accessibleProjectIds)
             ->whereNotNull('due_date')
             ->where('due_date', '>=', now()->toDateString())
             ->where('status', '!=', IssueStatus::DONE->value)
@@ -239,8 +252,8 @@ class CalendarController extends Controller
             ->orderBy('due_date')
             ->get();
 
-        $upcomingIssues = $issuesWithDue->where('status', '!=', IssueStatus::DONE->value);
-        $doneIssues = $issuesWithDue->where('status', IssueStatus::DONE->value);
+        $upcomingIssues = $issuesWithDue->filter(fn (Issue $i) => $i->status !== IssueStatus::DONE);
+        $doneIssues = $issuesWithDue->filter(fn (Issue $i) => $i->status === IssueStatus::DONE);
 
         $isProjectManager = $this->isProjectManager();
 
@@ -266,7 +279,7 @@ class CalendarController extends Controller
     public function updateSettings(Request $request)
     {
         if (!$this->isProjectManager()) {
-            abort(403, 'Hanya Project Manager atau Scrum Master yang memiliki wewenang untuk mengubah pengaturan kalender proyek.');
+            abort(403, 'Hanya Project Manager yang memiliki wewenang untuk mengubah pengaturan kalender proyek.');
         }
 
         $validated = $request->validate([

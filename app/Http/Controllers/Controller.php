@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 abstract class Controller
 {
     /**
-     * Check if the currently authenticated user is a Project Manager or Scrum Master.
+     * Check if the currently authenticated user is a Project Manager.
      */
     protected function isProjectManager(): bool
     {

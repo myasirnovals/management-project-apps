@@ -42,6 +42,8 @@ class ComponentController extends Controller
 
     public function update(Request $request, Project $project, Component $component): RedirectResponse
     {
+        abort_if($component->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageComponents()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang memperbarui komponen.');
         }
@@ -59,6 +61,8 @@ class ComponentController extends Controller
 
     public function destroy(Project $project, Component $component): RedirectResponse
     {
+        abort_if($component->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageComponents()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang menghapus komponen.');
         }

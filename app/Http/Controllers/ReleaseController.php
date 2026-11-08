@@ -48,6 +48,8 @@ class ReleaseController extends Controller
 
     public function update(Request $request, Project $project, ReleaseVersion $version): RedirectResponse
     {
+        abort_if($version->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageReleases()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang memperbarui versi rilis.');
         }
@@ -66,19 +68,20 @@ class ReleaseController extends Controller
     }
 
     /**
-     * Perform release (Modul V.L Gambar 5.14 & 5.15).
+     * Mark a version as released.
      */
     public function release(Request $request, Project $project, ReleaseVersion $version): RedirectResponse
     {
+        abort_if($version->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageReleases()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang mengeksekusi rilis.');
         }
 
         $unresolvedIssues = $version->issues()->where('status', '!=', IssueStatus::DONE->value)->count();
 
-        // Release Scope Lock check
         if ($unresolvedIssues > 0 && !$request->boolean('ignore_unresolved')) {
-            return back()->with('warning', "Perhatian: Masih ada {$unresolvedIssues} issue yang belum selesai pada versi ini. Anda dapat mencentang 'Abaikan & Tetap Rilis' untuk melanjutkan.");
+            return back()->with('warning', "Perhatian: Masih ada {$unresolvedIssues} issue yang belum selesai pada versi ini. Centang 'Abaikan & Tetap Rilis' untuk melanjutkan.");
         }
 
         $version->update([
@@ -91,6 +94,8 @@ class ReleaseController extends Controller
 
     public function destroy(Project $project, ReleaseVersion $version): RedirectResponse
     {
+        abort_if($version->project_id !== $project->id, 404);
+
         if (!\Illuminate\Support\Facades\Auth::user()?->canManageReleases()) {
             abort(403, 'Akses ditolak. Hanya Project Manager atau Product Owner yang berwenang menghapus versi rilis.');
         }
