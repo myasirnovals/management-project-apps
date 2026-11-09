@@ -26,7 +26,7 @@ class RenderAllViewsTest extends TestCase
 
     public function test_all_authenticated_pages_render_without_error(): void
     {
-        $user = User::where('email', 'admin@project.local')->first();
+        $user = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         $routes = [

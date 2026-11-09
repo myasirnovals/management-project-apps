@@ -5,7 +5,68 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/*
+ * Palet "hutan pagi", diambil dari foto latar login dan logo kupu-kupu.
+ * Skala slate dibuat kehijauan (lantai hutan), indigo menjadi hijau daun
+ * (aksen utama, tombol dan menu aktif), purple menjadi tanah liat
+ * (aksen kedua, dekat dengan merah logo). Merah murni hanya dipakai
+ * untuk logo dan status bahaya (rose).
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-display: 'Fraunces', Georgia, serif;
+
+    --color-slate-50: #f1f6f3;
+    --color-slate-100: #e3ece6;
+    --color-slate-200: #c9d8ce;
+    --color-slate-300: #a9bfb0;
+    --color-slate-400: #8aa494;
+    --color-slate-500: #74907f;
+    --color-slate-600: #4a6354;
+    --color-slate-700: #34493c;
+    --color-slate-800: #23342a;
+    --color-slate-900: #16231c;
+    --color-slate-950: #0d1712;
+
+    --color-indigo-50: #f2f8e8;
+    --color-indigo-100: #e1efc9;
+    --color-indigo-200: #c6e09b;
+    --color-indigo-300: #a5cb68;
+    --color-indigo-400: #8ab548;
+    --color-indigo-500: #6b9632;
+    --color-indigo-600: #52792a;
+    --color-indigo-700: #3f5e22;
+    --color-indigo-800: #314a1d;
+    --color-indigo-900: #263a18;
+    --color-indigo-950: #14210c;
+
+    --color-purple-50: #fbf1ec;
+    --color-purple-100: #f6ddd1;
+    --color-purple-200: #edbba3;
+    --color-purple-300: #e0997a;
+    --color-purple-400: #d27a55;
+    --color-purple-500: #bd5f3a;
+    --color-purple-600: #a24c2d;
+    --color-purple-700: #833d26;
+    --color-purple-800: #673220;
+    --color-purple-900: #4f291c;
+    --color-purple-950: #2b150e;
+}
+
+@layer base {
+    :focus-visible {
+        outline: 2px solid var(--color-indigo-300);
+        outline-offset: 2px;
+    }
+
+    ::selection {
+        background: var(--color-indigo-500);
+        color: #fff;
+    }
+
+    input[type='checkbox'],
+    input[type='radio'] {
+        accent-color: var(--color-indigo-500);
+    }
 }

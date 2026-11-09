@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\IssueType;
 use App\Enums\SprintStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -76,6 +77,24 @@ class Project extends Model
             ->firstOrFail();
     }
 
+    /**
+     * Project Manager melihat semua proyek. Peran lain hanya proyek yang dimiliki atau diikutinya.
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->isProjectManager()) {
+            return $query;
+        }
+
+        return $query->where(fn (Builder $q) => $q
+            ->where('owner_id', $user->id)
+            ->orWhereHas('members', fn (Builder $m) => $m->where('users.id', $user->id)));
+    }
+
+    public function isAccessibleBy(User $user): bool
+    {
+        return static::visibleTo($user)->whereKey($this->getKey())->exists();
+    }
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');

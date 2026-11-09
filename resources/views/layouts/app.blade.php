@@ -6,11 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $title ?? 'Workspace' }} - {{ config('app.name', 'AgilePM') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/kupu-kupu-192.png') }}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -29,11 +30,7 @@
         <!-- Brand & Logo -->
         <div class="h-16 flex items-center gap-3 px-5 border-b border-slate-800">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
-                    </svg>
-                </div>
+                <x-brand-mark size="w-9 h-9" />
                 <div>
                     <span class="font-bold text-base tracking-tight text-white block">AgilePM</span>
                     <span class="text-[10px] text-slate-400 uppercase tracking-widest block font-semibold">Pro Project Studio</span>
@@ -138,6 +135,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                             <span>Laporan Agile</span>
+                        </a>
+
                         <a href="{{ route('projects.github.index', $currentProject) }}"
                             class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.github.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <div class="flex items-center gap-3">
@@ -151,6 +150,7 @@
                             @endif
                         </a>
 
+                        @if(Auth::user()->isProjectManager())
                         <a href="{{ route('projects.edit', $currentProject) }}"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('projects.edit') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -159,6 +159,7 @@
                             </svg>
                             <span>Pengaturan Proyek</span>
                         </a>
+                        @endif
                     </nav>
                 </div>
             @else
@@ -176,6 +177,7 @@
                             <span>Dashboard</span>
                         </a>
 
+                        @if(Auth::user()->isProjectManager())
                         <a href="{{ route('users.index') }}"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('users.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,6 +185,7 @@
                             </svg>
                             <span>Kelola Tim & Anggota</span>
                         </a>
+                        @endif
 
                         <a href="{{ route('calendar.index') }}"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('calendar.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
@@ -192,6 +195,7 @@
                             <span>Kalender Proyek</span>
                         </a>
 
+                        @if(Auth::user()->isProjectManager())
                         <a href="{{ route('app.settings') }}"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition {{ request()->routeIs('app.settings*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,6 +204,7 @@
                             </svg>
                             <span>Pengaturan Aplikasi</span>
                         </a>
+                        @endif
                     </nav>
                 </div>
             @endif

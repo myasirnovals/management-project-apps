@@ -16,70 +16,18 @@ use App\Models\Sprint;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // 1. Create Default Users (Strictly managed by Admin/PM, no public register)
-        $pm = User::updateOrCreate(
-            ['email' => 'admin@project.local'],
-            [
-                'name' => 'Devita Dwitama (Project Manager)',
-                'password' => Hash::make('password123'),
-                'phone' => '081234567890',
-                'role' => UserRole::PROJECT_MANAGER,
-                'job_title' => 'Project Manager & Scrum Master',
-                'is_active' => true,
-            ]
-        );
+        [$pm, $po, $ui, $lead] = $this->seedTeam();
 
-        $po = User::updateOrCreate(
-            ['email' => 'po@project.local'],
-            [
-                'name' => 'Satriyo Ananda (Product Owner)',
-                'password' => Hash::make('password123'),
-                'phone' => '081234567891',
-                'role' => UserRole::PRODUCT_OWNER,
-                'job_title' => 'Product Owner',
-                'is_active' => true,
-            ]
-        );
-
-        $dev1 = User::updateOrCreate(
-            ['email' => 'yessi@project.local'],
-            [
-                'name' => 'Yessi Sofia',
-                'password' => Hash::make('password123'),
-                'phone' => '081234567892',
-                'role' => UserRole::DEVELOPER,
-                'job_title' => 'Frontend Developer',
-                'is_active' => true,
-            ]
-        );
-
-        $dev2 = User::updateOrCreate(
-            ['email' => 'eprian@project.local'],
-            [
-                'name' => 'Eprian Junan',
-                'password' => Hash::make('password123'),
-                'phone' => '081234567893',
-                'role' => UserRole::DEVELOPER,
-                'job_title' => 'Backend Developer',
-                'is_active' => true,
-            ]
-        );
-
-        // 2. Create Initial Project from Module Handbook
         $project = Project::updateOrCreate(
             ['key' => 'PRK'],
             [
-                'name' => 'PrakManpro Software Project',
-                'description' => 'Proyek aplikasi Manajemen Proyek berbasis metodologi Agile Scrum sesuai modul praktikum.',
+                'name' => 'Sistem Informasi Manajemen Toko',
+                'description' => 'Pengembangan perangkat lunak Sistem Informasi Manajemen Toko: kasir, stok barang, dan laporan penjualan.',
                 'type' => 'scrum',
                 'owner_id' => $pm->id,
                 'status' => 'active',
@@ -87,237 +35,223 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Attach members to project
         $project->members()->syncWithoutDetaching([
             $pm->id => ['role' => UserRole::PROJECT_MANAGER->value],
             $po->id => ['role' => UserRole::PRODUCT_OWNER->value],
-            $dev1->id => ['role' => UserRole::DEVELOPER->value],
-            $dev2->id => ['role' => UserRole::DEVELOPER->value],
+            $ui->id => ['role' => UserRole::DEVELOPER->value],
+            $lead->id => ['role' => UserRole::DEVELOPER->value],
         ]);
 
-        // 3. Create Components (Modul I.F)
-        $compFrontend = Component::updateOrCreate(
+        $frontend = Component::updateOrCreate(
             ['project_id' => $project->id, 'name' => 'Front-end'],
-            [
-                'description' => 'Ensure the technical feasibility of UI/UX designs and user interactions',
-                'lead_id' => $dev1->id,
-            ]
+            ['description' => 'Antarmuka kasir dan dashboard, mengikuti rancangan UI/UX.', 'lead_id' => $ui->id]
         );
-
-        $compBackend = Component::updateOrCreate(
+        $backend = Component::updateOrCreate(
             ['project_id' => $project->id, 'name' => 'Back-end'],
-            [
-                'description' => 'Write secure code, APIs, and business logic applications',
-                'lead_id' => $dev2->id,
-            ]
+            ['description' => 'API, logika bisnis, dan basis data.', 'lead_id' => $lead->id]
+        );
+        Component::updateOrCreate(
+            ['project_id' => $project->id, 'name' => 'Analisis & Dokumentasi'],
+            ['description' => 'Kebutuhan bisnis, alur proses, dan dokumen teknis.', 'lead_id' => $po->id]
         );
 
-        $compDocs = Component::updateOrCreate(
-            ['project_id' => $project->id, 'name' => 'Documentation'],
-            [
-                'description' => 'Technical specifications and user manual documentation',
-                'lead_id' => $pm->id,
-            ]
-        );
-
-        // 4. Create Release Versions (Modul V)
         $version = ReleaseVersion::updateOrCreate(
-            ['project_id' => $project->id, 'name' => 'SistemInformasi Ver1.1'],
+            ['project_id' => $project->id, 'name' => 'v0.1 Kasir dan Stok'],
             [
-                'description' => 'Update website to include authentication, chat bot, and bug fixes',
-                'start_date' => Carbon::now()->subDays(10),
-                'release_date' => Carbon::now()->addDays(14),
+                'description' => 'Rilis awal: login, transaksi kasir, dan pencatatan stok.',
+                'start_date' => Carbon::now()->subDays(7),
+                'release_date' => Carbon::now()->addDays(21),
                 'status' => VersionStatus::UNRELEASED,
             ]
         );
 
-        // 5. Create Sprints (Modul III.B)
-        $sprint1 = Sprint::updateOrCreate(
+        $sprint = Sprint::updateOrCreate(
             ['project_id' => $project->id, 'name' => 'PRK Sprint 1'],
             [
-                'goal' => 'Menyelesaikan modul autentikasi user dan alur kerja aplikasi utama',
-                'start_date' => Carbon::now()->subDays(5),
-                'end_date' => Carbon::now()->addDays(9),
+                'goal' => 'Alur login dan transaksi kasir dasar berjalan end to end.',
+                'start_date' => Carbon::now()->subDays(3),
+                'end_date' => Carbon::now()->addDays(11),
                 'status' => SprintStatus::ACTIVE,
             ]
         );
-
-        $sprint2 = Sprint::updateOrCreate(
+        Sprint::updateOrCreate(
             ['project_id' => $project->id, 'name' => 'PRK Sprint 2'],
             [
-                'goal' => 'Pengembangan fitur chat bot dan laporan analitik',
-                'start_date' => Carbon::now()->addDays(10),
-                'end_date' => Carbon::now()->addDays(24),
+                'goal' => 'Manajemen stok barang dan laporan penjualan harian.',
+                'start_date' => Carbon::now()->addDays(12),
+                'end_date' => Carbon::now()->addDays(26),
                 'status' => SprintStatus::PLANNING,
             ]
         );
 
-        // 6. Create Epics (Modul II.A)
-        $epic1 = Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-1'],
-            [
-                'type' => IssueType::EPIC,
-                'title' => 'Autentikasi User',
-                'description' => 'Kumpulan inisiatif terkait alur registrasi internal, login pengguna, dan keamanan akun.',
-                'status' => IssueStatus::IN_PROGRESS,
-                'priority' => IssuePriority::HIGH,
-                'reporter_id' => $po->id,
-                'assignee_id' => $pm->id,
-                'component_id' => $compBackend->id,
-                'version_id' => $version->id,
-                'order_index' => 1,
-            ]
-        );
+        $epicKasir = $this->issue($project, 'PRK-1', [
+            'type' => IssueType::EPIC,
+            'title' => 'Transaksi kasir',
+            'description' => 'Semua yang dibutuhkan kasir untuk mencatat penjualan dari awal sampai struk.',
+            'status' => IssueStatus::IN_PROGRESS,
+            'priority' => IssuePriority::HIGH,
+            'reporter_id' => $po->id,
+            'assignee_id' => $po->id,
+            'component_id' => $backend->id,
+            'version_id' => $version->id,
+        ]);
 
-        $epic2 = Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-2'],
-            [
-                'type' => IssueType::EPIC,
-                'title' => 'Develop Website Viable Product',
-                'description' => 'Website Designer: Website Looks Profesional and interactive.',
-                'status' => IssueStatus::TO_DO,
-                'priority' => IssuePriority::MEDIUM,
-                'reporter_id' => $po->id,
-                'assignee_id' => $dev1->id,
-                'component_id' => $compFrontend->id,
-                'order_index' => 2,
-            ]
-        );
+        $epicStok = $this->issue($project, 'PRK-2', [
+            'type' => IssueType::EPIC,
+            'title' => 'Manajemen stok barang',
+            'description' => 'Pencatatan barang masuk, barang keluar, dan batas stok minimum.',
+            'status' => IssueStatus::TO_DO,
+            'priority' => IssuePriority::MEDIUM,
+            'reporter_id' => $po->id,
+            'assignee_id' => $lead->id,
+            'component_id' => $backend->id,
+        ]);
 
-        // 7. Create Stories & Tasks in Sprint 1 (Modul II.B & II.C)
-        $story1 = Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-3'],
-            [
-                'parent_id' => $epic1->id,
-                'type' => IssueType::STORY,
-                'title' => 'User Ingin tampilan web yang profesional dengan tata letak responsif',
-                'description' => 'Sebagai pengguna, saya ingin antarmuka yang bersih dan interaktif agar mudah mengakses fitur utama.',
-                'status' => IssueStatus::IN_PROGRESS,
-                'priority' => IssuePriority::HIGH,
-                'story_points' => 5,
-                'original_estimate_hours' => 16,
-                'time_spent_hours' => 8,
-                'reporter_id' => $po->id,
-                'assignee_id' => $dev1->id,
-                'component_id' => $compFrontend->id,
-                'sprint_id' => $sprint1->id,
-                'version_id' => $version->id,
-                'order_index' => 3,
-                'due_date' => Carbon::now()->addDays(4),
-            ]
-        );
+        $story = $this->issue($project, 'PRK-3', [
+            'parent_id' => $epicKasir->id,
+            'type' => IssueType::STORY,
+            'title' => 'Kasir dapat menambah barang ke keranjang lewat pencarian nama atau kode',
+            'description' => 'Hasil pencarian muncul saat mengetik, dan barang yang stoknya habis diberi tanda.',
+            'status' => IssueStatus::IN_PROGRESS,
+            'priority' => IssuePriority::HIGH,
+            'story_points' => 5,
+            'original_estimate_hours' => 16,
+            'time_spent_hours' => 6,
+            'reporter_id' => $po->id,
+            'assignee_id' => $ui->id,
+            'component_id' => $frontend->id,
+            'sprint_id' => $sprint->id,
+            'version_id' => $version->id,
+            'due_date' => Carbon::now()->addDays(5),
+        ]);
 
-        // Subtasks under Story1 (Modul II.C)
-        Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-4'],
-            [
-                'parent_id' => $story1->id,
-                'type' => IssueType::SUBTASK,
-                'title' => 'Task 1: Desain Halaman Login',
-                'description' => 'Buat rancangan visual login page dengan tata letak modern dan ramah pengguna.',
-                'status' => IssueStatus::DONE,
-                'priority' => IssuePriority::MEDIUM,
-                'story_points' => 2,
-                'reporter_id' => $pm->id,
-                'assignee_id' => $dev1->id,
-                'component_id' => $compFrontend->id,
-                'sprint_id' => $sprint1->id,
-                'version_id' => $version->id,
-                'order_index' => 4,
-            ]
-        );
+        $this->issue($project, 'PRK-4', [
+            'parent_id' => $story->id,
+            'type' => IssueType::SUBTASK,
+            'title' => 'Rancang layar kasir di Figma',
+            'status' => IssueStatus::DONE,
+            'priority' => IssuePriority::MEDIUM,
+            'story_points' => 2,
+            'reporter_id' => $pm->id,
+            'assignee_id' => $ui->id,
+            'component_id' => $frontend->id,
+            'sprint_id' => $sprint->id,
+            'version_id' => $version->id,
+        ]);
 
-        Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-5'],
-            [
-                'parent_id' => $story1->id,
-                'type' => IssueType::SUBTASK,
-                'title' => 'Task 2: Implementasi Halaman Login HTML/CSS/JS',
-                'description' => 'Coding antarmuka login menggunakan Blade template dan styling Tailwind CSS.',
-                'status' => IssueStatus::IN_PROGRESS,
-                'priority' => IssuePriority::HIGH,
-                'story_points' => 3,
-                'reporter_id' => $pm->id,
-                'assignee_id' => $dev1->id,
-                'component_id' => $compFrontend->id,
-                'sprint_id' => $sprint1->id,
-                'version_id' => $version->id,
-                'order_index' => 5,
-            ]
-        );
+        $this->issue($project, 'PRK-5', [
+            'parent_id' => $story->id,
+            'type' => IssueType::SUBTASK,
+            'title' => 'Endpoint pencarian barang',
+            'status' => IssueStatus::IN_PROGRESS,
+            'priority' => IssuePriority::HIGH,
+            'story_points' => 3,
+            'reporter_id' => $pm->id,
+            'assignee_id' => $lead->id,
+            'component_id' => $backend->id,
+            'sprint_id' => $sprint->id,
+            'version_id' => $version->id,
+        ]);
 
-        // Bug in Sprint 1 (Modul II.D)
-        Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-6'],
-            [
-                'parent_id' => $story1->id,
-                'type' => IssueType::BUG,
-                'title' => 'Tombol simpan tidak bekerja pada browser Safari',
-                'description' => 'Ketika menekan tombol simpan, event submit terblokir karena form validation bug.',
-                'status' => IssueStatus::TO_DO,
-                'priority' => IssuePriority::HIGHEST,
-                'story_points' => 3,
-                'reporter_id' => $pm->id,
-                'assignee_id' => $dev2->id,
-                'component_id' => $compFrontend->id,
-                'sprint_id' => $sprint1->id,
-                'version_id' => $version->id,
-                'order_index' => 6,
-            ]
-        );
+        $this->issue($project, 'PRK-6', [
+            'type' => IssueType::BUG,
+            'title' => 'Total belanja salah saat diskon dan pajak dipakai bersamaan',
+            'description' => 'Diskon dihitung setelah pajak. Seharusnya sebelum pajak.',
+            'status' => IssueStatus::TO_DO,
+            'priority' => IssuePriority::HIGHEST,
+            'story_points' => 2,
+            'reporter_id' => $lead->id,
+            'assignee_id' => $lead->id,
+            'component_id' => $backend->id,
+            'sprint_id' => $sprint->id,
+            'version_id' => $version->id,
+        ]);
 
-        // 8. Backlog Issues (Modul VI)
-        Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-7'],
-            [
-                'parent_id' => $epic1->id,
-                'type' => IssueType::STORY,
-                'title' => 'Alur Kerja Lupa Password & Reset Token',
-                'description' => 'User memasukkan email yang terhubung dengan akun untuk menerima token pemulihan.',
-                'status' => IssueStatus::TO_DO,
-                'priority' => IssuePriority::MEDIUM,
-                'story_points' => 5,
-                'reporter_id' => $po->id,
-                'assignee_id' => $dev2->id,
-                'component_id' => $compBackend->id,
-                'sprint_id' => null, // IN BACKLOG
-                'order_index' => 7,
-            ]
-        );
+        $this->issue($project, 'PRK-7', [
+            'parent_id' => $epicStok->id,
+            'type' => IssueType::STORY,
+            'title' => 'Pemilik toko mendapat tanda saat stok barang di bawah batas minimum',
+            'status' => IssueStatus::TO_DO,
+            'priority' => IssuePriority::MEDIUM,
+            'story_points' => 5,
+            'reporter_id' => $po->id,
+            'component_id' => $backend->id,
+        ]);
 
-        Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-8'],
-            [
-                'type' => IssueType::STORY,
-                'title' => 'Create Chat Bot Feature untuk Bantuan Pengguna',
-                'description' => 'Integrasi bot bantuan interaktif untuk menjawab pertanyaan tim secara real-time.',
-                'status' => IssueStatus::TO_DO,
-                'priority' => IssuePriority::LOW,
-                'story_points' => 8,
-                'reporter_id' => $po->id,
-                'assignee_id' => null, // Unassigned
-                'component_id' => $compBackend->id,
-                'sprint_id' => null, // IN BACKLOG
-                'version_id' => $version->id,
-                'order_index' => 8,
-            ]
-        );
+        $this->issue($project, 'PRK-8', [
+            'type' => IssueType::STORY,
+            'title' => 'Laporan penjualan harian dapat diunduh sebagai CSV',
+            'status' => IssueStatus::TO_DO,
+            'priority' => IssuePriority::LOW,
+            'story_points' => 3,
+            'reporter_id' => $po->id,
+            'component_id' => $backend->id,
+            'version_id' => $version->id,
+        ]);
+    }
 
-        Issue::updateOrCreate(
-            ['project_id' => $project->id, 'issue_key' => 'PRK-9'],
+    /**
+     * Tim inti proyek. Kata sandi awal hanya diberikan saat akun dibuat, jadi
+     * menjalankan seeder ulang tidak menimpa kata sandi yang sudah diganti.
+     *
+     * @return array<int, User>
+     */
+    private function seedTeam(): array
+    {
+        $initialPassword = env('SEED_USER_PASSWORD', 'password123');
+
+        $team = [
             [
-                'type' => IssueType::BUG,
-                'title' => 'Tabel Akun Tidak Muncul pada Resolusi Mobile',
-                'description' => 'Overflow table terpotong saat layar di bawah 640px.',
-                'status' => IssueStatus::TO_DO,
-                'priority' => IssuePriority::LOW,
-                'story_points' => 1,
-                'reporter_id' => $dev1->id,
-                'assignee_id' => null,
-                'component_id' => $compFrontend->id,
-                'sprint_id' => null, // IN BACKLOG
-                'order_index' => 9,
-            ]
+                'email' => 'myasirnoval23@if.unjani.ac.id',
+                'name' => 'Muhamad Yasir Noval',
+                'phone' => '088220693823',
+                'role' => UserRole::PROJECT_MANAGER,
+                'job_title' => 'Project Manager',
+            ],
+            [
+                'email' => 'ammarbagas23@if.unjani.ac.id',
+                'name' => 'Ammar Bagas Fathurrahman Wantoro',
+                'phone' => '082119763858',
+                'role' => UserRole::PRODUCT_OWNER,
+                'job_title' => 'System Analyst',
+            ],
+            [
+                'email' => 'ajikartiko23@if.unjani.ac.id',
+                'name' => 'Aji Kartiko Hartanto',
+                'phone' => '088971734039',
+                'role' => UserRole::DEVELOPER,
+                'job_title' => 'UI/UX Designer',
+            ],
+            [
+                'email' => 'myusron23@if.unjani.ac.id',
+                'name' => 'Muhamad Yusron Noval',
+                'phone' => '083866573447',
+                'role' => UserRole::DEVELOPER,
+                'job_title' => 'Lead Developer, QA / Test Engineer',
+            ],
+        ];
+
+        return array_map(function (array $attributes) use ($initialPassword): User {
+            $user = User::firstOrNew(['email' => $attributes['email']]);
+            $user->fill($attributes + ['is_active' => true]);
+
+            if (! $user->exists) {
+                $user->password = $initialPassword;
+            }
+
+            $user->save();
+
+            return $user;
+        }, $team);
+    }
+
+    private function issue(Project $project, string $key, array $attributes): Issue
+    {
+        static $order = 0;
+
+        return Issue::updateOrCreate(
+            ['project_id' => $project->id, 'issue_key' => $key],
+            $attributes + ['order_index' => ++$order]
         );
     }
 }

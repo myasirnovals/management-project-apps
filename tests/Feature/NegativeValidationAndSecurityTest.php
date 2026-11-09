@@ -25,8 +25,10 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_login_fails_with_invalid_password(): void
     {
+        $pm = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
+
         $response = $this->post('/login', [
-            'email' => 'admin@project.local',
+            'email' => $pm->email,
             'password' => 'wrong-password-123',
         ]);
 
@@ -53,7 +55,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_project_creation_fails_with_invalid_key_format(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         $response = $this->actingAs($admin)->post('/projects', [
             'name' => 'Invalid Key Project',
@@ -70,7 +72,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_project_creation_fails_with_duplicate_key(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         // Key 'PRK' sudah ada dari Seeder
         $response = $this->actingAs($admin)->post('/projects', [
@@ -88,7 +90,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_user_cannot_delete_own_account(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         $response = $this->actingAs($admin)->delete("/users/{$admin->id}");
 
@@ -101,11 +103,11 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_user_creation_fails_with_duplicate_email(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         $response = $this->actingAs($admin)->post('/users', [
             'name' => 'Duplicate Email User',
-            'email' => 'admin@project.local', // Already registered
+            'email' => $admin->email, // Already registered
             'role' => 'developer',
             'password' => 'secret123',
         ]);
@@ -118,7 +120,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_user_creation_fails_with_short_password(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         $response = $this->actingAs($admin)->post('/users', [
             'name' => 'Short Password User',
@@ -136,7 +138,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_issue_creation_fails_with_invalid_attributes(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         $response = $this->actingAs($admin)->postJson("/projects/{$project->id}/issues", [
@@ -154,7 +156,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_cannot_start_sprint_when_another_sprint_is_already_active(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // Pastikan ada 1 sprint aktif
@@ -184,7 +186,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_start_sprint_fails_if_end_date_is_before_start_date(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // Nonaktifkan sprint aktif agar tidak kena konflik sprint ganda
@@ -214,7 +216,7 @@ class NegativeValidationAndSecurityTest extends TestCase
      */
     public function test_bulk_action_fails_when_no_issues_selected(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         $response = $this->actingAs($admin)->post("/projects/{$project->id}/backlog/bulk", [

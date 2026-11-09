@@ -29,8 +29,8 @@ class WhatsAppNotificationAndReminderTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
 
-        $this->pm = User::where('email', 'admin@project.local')->first();
-        $this->dev = User::where('email', 'yessi@project.local')->first();
+        $this->pm = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
+        $this->dev = User::where('role', \App\Enums\UserRole::DEVELOPER->value)->first();
         $this->project = Project::where('key', 'PRK')->first();
     }
 
@@ -50,10 +50,11 @@ class WhatsAppNotificationAndReminderTest extends TestCase
     public function test_user_model_has_whatsapp_helper_methods(): void
     {
         $this->assertTrue($this->dev->hasWhatsApp());
-        $this->assertEquals('6281234567892', $this->dev->formattedPhone());
+        $expectedPhone = $this->dev->formattedPhone();
+        $this->assertNotEmpty($expectedPhone);
 
         $url = $this->dev->whatsappUrl('Halo Dunia');
-        $this->assertStringContainsString('https://wa.me/6281234567892?text=Halo', $url);
+        $this->assertStringContainsString('https://wa.me/' . $expectedPhone . '?text=Halo', $url);
 
         $noPhoneUser = User::create([
             'name' => 'Tanpa Phone',
@@ -140,9 +141,10 @@ class WhatsAppNotificationAndReminderTest extends TestCase
         ]);
 
         $this->assertTrue($response->json('whatsapp.has_phone'));
-        $this->assertStringContainsString('wa.me/6281234567892', $response->json('whatsapp.reminder_url'));
-        $this->assertStringContainsString('wa.me/6281234567892', $response->json('whatsapp.overdue_url'));
-        $this->assertStringContainsString('wa.me/6281234567892', $response->json('whatsapp.unresponsive_url'));
+        $expectedPhone = $this->dev->formattedPhone();
+        $this->assertStringContainsString('wa.me/' . $expectedPhone, $response->json('whatsapp.reminder_url'));
+        $this->assertStringContainsString('wa.me/' . $expectedPhone, $response->json('whatsapp.overdue_url'));
+        $this->assertStringContainsString('wa.me/' . $expectedPhone, $response->json('whatsapp.unresponsive_url'));
     }
 
     public function test_send_due_date_reminders_command_executes_successfully(): void

@@ -35,10 +35,10 @@ class ProjectManagementTest extends TestCase
 
     public function test_user_can_login_with_valid_credentials(): void
     {
-        $user = User::where('email', 'admin@project.local')->first();
+        $user = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         $response = $this->post('/login', [
-            'email' => 'admin@project.local',
+            'email' => $user->email,
             'password' => 'password123',
         ]);
 
@@ -48,7 +48,7 @@ class ProjectManagementTest extends TestCase
 
     public function test_authenticated_user_can_access_dashboard_and_boards(): void
     {
-        $user = User::where('email', 'admin@project.local')->first();
+        $user = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         $response = $this->actingAs($user)->get('/dashboard');
@@ -66,7 +66,7 @@ class ProjectManagementTest extends TestCase
 
     public function test_project_manager_can_create_new_team_member(): void
     {
-        $pm = User::where('email', 'admin@project.local')->first();
+        $pm = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         $response = $this->actingAs($pm)->post('/users', [
             'name' => 'Budi Santoso',
@@ -85,8 +85,8 @@ class ProjectManagementTest extends TestCase
     }
     public function test_crud_projects(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
-        $dev = User::where('email', 'yessi@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
+        $dev = User::where('role', \App\Enums\UserRole::DEVELOPER->value)->first();
 
         // 1. Create Project
         $response = $this->actingAs($admin)->post('/projects', [
@@ -127,7 +127,7 @@ class ProjectManagementTest extends TestCase
 
     public function test_crud_issues_and_subtasks(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // 1. Create Issue
@@ -198,7 +198,7 @@ class ProjectManagementTest extends TestCase
 
     public function test_crud_sprint_lifecycle(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // 1. Create Sprint
@@ -244,7 +244,7 @@ class ProjectManagementTest extends TestCase
 
     public function test_crud_components(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // 1. Create Component
@@ -272,7 +272,7 @@ class ProjectManagementTest extends TestCase
 
     public function test_crud_releases(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // 1. Create Release Version
@@ -310,7 +310,7 @@ class ProjectManagementTest extends TestCase
 
     public function test_backlog_operations_and_bulk_actions(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // Create 2 test issues

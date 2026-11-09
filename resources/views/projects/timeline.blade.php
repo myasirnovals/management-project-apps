@@ -94,7 +94,7 @@
                 <div class="bg-slate-900 border-b border-slate-800 px-5 py-2.5 flex items-center justify-between text-xs text-slate-300">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span class="font-medium text-white">Google Calendar Live View — Proyek {{ $project->name }}</span>
+                        <span class="font-medium text-white">Google Calendar Live View - Proyek {{ $project->name }}</span>
                         @if(!empty($calendarSettings['calendar_id']))
                         <span class="text-slate-500 font-mono text-[11px] truncate max-w-[320px]">({{ $calendarSettings['calendar_id'] }})</span>
                         @endif
@@ -163,7 +163,7 @@
                             </div>
                             <div class="text-[11px] text-slate-400">
                                 @if($sprint->start_date && $sprint->end_date)
-                                    <span>{{ $sprint->start_date->format('d M Y') }} — {{ $sprint->end_date->format('d M Y') }}</span>
+                                    <span>{{ $sprint->start_date->format('d M Y') }} s/d {{ $sprint->end_date->format('d M Y') }}</span>
                                     <span class="text-slate-500">({{ $sprint->start_date->diffInDays($sprint->end_date) }} hari)</span>
                                 @else
                                     <span class="text-slate-500 italic">Tanggal belum ditentukan</span>

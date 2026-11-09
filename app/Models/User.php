@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use App\Notifications\ResetPasswordNotification;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -91,11 +94,42 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is Project Manager or Admin.
+     * Email selalu disimpan huruf kecil agar login dan reset kata sandi tidak peka huruf besar.
+     */
+    protected function email(): Attribute
+    {
+        return Attribute::make(set: fn (string $value) => Str::lower(trim($value)));
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    /**
+     * Project Manager adalah admin aplikasi. Scrum Master diperlakukan sama.
      */
     public function isProjectManager(): bool
     {
         return in_array($this->role, [UserRole::PROJECT_MANAGER, UserRole::SCRUM_MASTER]);
+    }
+
+    public function isProductOwner(): bool
+    {
+        return $this->role === UserRole::PRODUCT_OWNER;
+    }
+
+    public function isDeveloper(): bool
+    {
+        return $this->role === UserRole::DEVELOPER;
+    }
+
+    /**
+     * Pengelola backlog dan rilis: Project Manager dan Product Owner.
+     */
+    public function canManageBacklog(): bool
+    {
+        return $this->isProjectManager() || $this->isProductOwner();
     }
 
     /**

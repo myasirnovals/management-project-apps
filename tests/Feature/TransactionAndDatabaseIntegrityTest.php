@@ -32,7 +32,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_database_transaction_rolls_back_on_exception(): void
     {
-        $user = User::where('email', 'admin@project.local')->first();
+        $user = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $initialProjectCount = Project::count();
 
         try {
@@ -62,7 +62,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_sprint_completion_moves_incomplete_issues_to_backlog_atomically(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // Create a dedicated sprint with 3 issues
@@ -129,7 +129,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_sprint_completion_moves_incomplete_issues_to_next_sprint_atomically(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         $currentSprint = Sprint::create([
@@ -173,7 +173,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_deleting_project_cascades_all_related_records_without_orphans(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         // 1. Create a project with full child hierarchy
         $project = Project::create([
@@ -241,7 +241,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_deleting_parent_issue_cascades_subtasks(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         $parent = Issue::create([
@@ -274,7 +274,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_calendar_route_displays_workspace_projects(): void
     {
-        $admin = User::where('email', 'admin@project.local')->first();
+        $admin = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
 
         $response = $this->actingAs($admin)->get('/kalender-proyek');
         $response->assertStatus(200);
@@ -304,7 +304,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_google_calendar_settings_authorization(): void
     {
-        $pm = User::where('email', 'admin@project.local')->first();
+        $pm = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $developer = User::where('role', \App\Enums\UserRole::DEVELOPER->value)->first();
 
         // Developer should be forbidden (403)
@@ -334,7 +334,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_application_settings_authorization(): void
     {
-        $pm = User::where('email', 'admin@project.local')->first();
+        $pm = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $developer = User::where('role', \App\Enums\UserRole::DEVELOPER->value)->first();
 
         // Developer can view page in read-only
@@ -381,7 +381,7 @@ class TransactionAndDatabaseIntegrityTest extends TestCase
      */
     public function test_project_timeline_calendar_route_and_navigation(): void
     {
-        $pm = User::where('email', 'admin@project.local')->first();
+        $pm = User::where('role', \App\Enums\UserRole::PROJECT_MANAGER->value)->first();
         $project = Project::where('key', 'PRK')->first();
 
         // 1. Visiting project board displays Waktu Proyek link targeting /projects/{project}/timeline-calendar
